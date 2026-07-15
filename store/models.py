@@ -28,9 +28,59 @@ class BaseModel(models.Model):
 
 
 class DateModel(BaseModel):
-    year = models.CharField(verbose_name="سال", max_length=4)
-    month = models.CharField(verbose_name="ماه", max_length=2)
-    day = models.CharField(verbose_name="روز", max_length=2)
+    YEAR_ITEMS = {
+        "1405":"1405"
+    }
+    MONTH_ITEMS = {
+        "1":"فروردین",
+        "2":"اردیبهشت",
+        "3":"خرداد",
+        "4":"تیر",
+        "5":"مرداد",
+        "6":"شهریور",
+        "7":"مهر",
+        "8":"آبان",
+        "9":"آذر",
+        "10":"دی",
+        "11":"بهمن",
+        "12":"اسفند",
+    }
+    DAY_ITEMS = {
+        "1":"1",
+        "2":"2",
+        "3":"3",
+        "4":"4",
+        "5":"5",
+        "6":"6",
+        "7":"7",
+        "8":"8",
+        "9":"9",
+        "10":"10",
+        "11":"11",
+        "12":"12",
+        "13":"13",
+        "14":"14",
+        "15":"15",
+        "16":"16",
+        "17":"17",
+        "18":"18",
+        "19":"19",
+        "20":"20",
+        "21":"21",
+        "22":"22",
+        "23":"23",
+        "24":"24",
+        "25":"25",
+        "26":"26",
+        "27":"27",
+        "28":"28",
+        "29":"29",
+        "30":"30",
+        "31":"31",
+    }
+    year = models.CharField(verbose_name="سال", max_length=4, choices=YEAR_ITEMS)
+    month = models.CharField(verbose_name="ماه", max_length=2, choices=MONTH_ITEMS)
+    day = models.CharField(verbose_name="روز", max_length=2, choices=DAY_ITEMS)
 
     def __str__(self):
         return f"{self.year}-{self.month}-{self.day}"

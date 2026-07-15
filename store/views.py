@@ -5,6 +5,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import Q
 from django.contrib import messages
 from .models import *
+from .forms import *
 
 # Create your views here.
 
@@ -50,3 +51,15 @@ class ProductListView(PermissionRequiredMixin, views.View):
             "product":product,
         }
         return render(request, "store/product-list.html")
+    
+
+class FileUploadView(PermissionRequiredMixin, views.View):
+    login_url = "accounts:login"
+    permission_required = ["store.add_filemodel"]
+
+    def get(self, request):
+        form = FileUploadForm()
+        context = {
+            "form":form,
+        }
+        return render(request, "store/file-upload.html")
