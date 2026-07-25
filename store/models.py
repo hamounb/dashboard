@@ -1,7 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
+from persiantools.jdatetime import JalaliDate
 
 # Create your models here.
+
+def file_directory_path(instance, filename):
+    t = t = JalaliDate.today().strftime("%Y/%m/%d/")
+    return f"{t}{filename}"
+
 
 class BaseModel(models.Model):
     user_modified = models.ForeignKey(
@@ -133,7 +139,8 @@ class SaleModel(BaseModel):
             return f"{self.pk}"
     
     class Meta:
-        ordering = ["-date"]
+        unique_together = ("date", "customer", "product", "count")
+        ordering = ["-date", "customer"]
         verbose_name = "فروش"
         verbose_name_plural = "فروش‌ها"
 
@@ -173,7 +180,7 @@ class CategoryFileModel(BaseModel):
 class FileModel(BaseModel):
     date = models.ForeignKey(DateModel, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="تاریخ")
     category = models.ForeignKey(CategoryFileModel, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="عنوان")
-    file = models.FileField(verbose_name="فایل",)
+    file = models.FileField(verbose_name="فایل", upload_to=file_directory_path)
 
     def __str__(self):
         if self.date and self.category:
