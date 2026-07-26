@@ -6,25 +6,10 @@ from django.db.models import Q
 from django.contrib import messages
 from .models import *
 from .forms import *
-import openpyxl
 import pandas as pd
 
 
 # Create your views here.
-
-COLUMN_MAP = {
-    "code": ["کد مشتری", "customer_code", "کد مشتریان"],
-    "name": ["نام مشتری", "customer_name", "نام و نام خانوادگی"],
-    "count": ["متراژ", "مقدار", "count"],
-    "price_total": ["مبلغ فروش", "مبلغ کل", "price_total"],
-}
-
-def find_column(df, possible_names):
-    for col in df.columns:
-        col_clean = str(col).strip().replace("\n", "").replace("\r", "")
-        if col_clean in possible_names:
-            return col_clean
-    return None
 
 
 class Test(PermissionRequiredMixin, views.View):
@@ -41,10 +26,62 @@ class CustomerListView(PermissionRequiredMixin, views.View):
 
     def get(self, request):
         customer = CustomerModel.objects.all()
+        count = customer.count()
+        customer_total_price = 0
+        total_count = 0
+        total_price = 0
+        sales = {}
+        for i in customer:
+            sale = SaleModel.objects.filter(customer=i)
+            total_count = 0
+            total_price = 0
+            for j in sale:
+                if j.count:
+                    total_count += float(j.count)
+                    total_count = round(total_count, 4)
+                else:
+                    pass
+                if j.price_total.isnumeric():
+                    total_price += float(j.price_total)
+                else:
+                    pass
+            customer_total_price += total_price
+            sales[i.code] = {"count":total_count, "price":total_price}
         context = {
             "customer":customer,
+            "sales":sales,
+            "count":count,
+            "customer_total_price":customer_total_price,
         }
         return render(request, "store/customer-list.html", context)
+
+
+class CustomerDetailsView(PermissionRequiredMixin, views.View):
+    login_url = "accounts:signin"
+    permission_required = ["store.view_customermodel"]
+
+    def get(self, request, cid):
+        customer = get_object_or_404(CustomerModel, pk=cid)
+        sale = SaleModel.objects.filter(customer=customer)
+        total_count = 0
+        total_price = 0
+        for i in sale:
+            if i.count:
+                total_count += float(i.count)
+                total_count = round(total_count, 4)
+            else:
+                pass
+            if i.price_total.isnumeric():
+                total_price += float(i.price_total)
+            else:
+                pass
+        context = {
+            "customer":customer,
+            "sale":sale,
+            "total_count":total_count,
+            "total_price":total_price,
+        }
+        return render(request, "store/customer-details.html", context)
     
 
 class DateListView(PermissionRequiredMixin, views.View):
@@ -52,9 +89,11 @@ class DateListView(PermissionRequiredMixin, views.View):
     permission_required = ["store.view_datemodel"]
 
     def get(self, request):
-        date = DateModel.objects.all()
+        date = DateModel.objects.all().order_by("day")
+        form = DurationForm()
         context = {
             "date":date,
+            "form":form,
         }
         return render(request, "store/date-list.html", context)
     
@@ -69,6 +108,21 @@ class ProductListView(PermissionRequiredMixin, views.View):
             "product":product,
         }
         return render(request, "store/product-list.html")
+
+
+COLUMN_MAP = {
+    "code": ["کد مشتری", "customer_code", "کد مشتریان"],
+    "name": ["نام مشتری", "customer_name", "نام و نام خانوادگی"],
+    "count": ["متراژ", "مقدار", "count"],
+    "price_total": ["مبلغ فروش", "مبلغ کل", "price_total"],
+}
+
+def find_column(df, possible_names):
+    for col in df.columns:
+        col_clean = str(col).strip().replace("\n", "").replace("\r", "")
+        if col_clean in possible_names:
+            return col_clean
+    return None
     
 
 class FileUploadView(views.View):
@@ -87,8 +141,35 @@ class FileUploadView(views.View):
         context = {
             "form":form,
         }
+        instance = form.save()
         if form.is_valid():
-            instance = form.save()
+            if form.cleaned_data.get("category") == "فروش":
+                instance = form.save()
+                excel_path = instance.file.path
+                df = pd.read_excel(excel_path)
+                col_code = find_column(df, COLUMN_MAP["code"])
+                col_name = find_column(df, COLUMN_MAP["name"])
+                col_count = find_column(df, COLUMN_MAP["count"])
+                col_price_total = find_column(df, COLUMN_MAP["price_total"])
+                if not all([col_code, col_name, col_count, col_price_total]):
+                    raise ValueError("ستون‌های لازم در فایل اکسل پیدا نشدند!")
+                for _, row in df.iterrows():
+                    code = str(row[col_code]).strip()
+                    name = str(row[col_name]).strip()
+                    count = str(row[col_count]).strip()
+                    price_total = str(row[col_price_total]).strip()
+                    customer, _ = CustomerModel.objects.get_or_create(
+                        code=code,
+                        defaults={"name": name, "user_created": request.user}
+                    )
+                    SaleModel.objects.get_or_create(
+                        customer=customer,
+                        product=None,
+                        count=count,
+                        price="0",
+                        price_total=price_total,
+                        user_created=request.user
+                    )
             return redirect("store:file-open", fid=instance.pk)
         else:
             return render(request, "store/file-upload.html", context)

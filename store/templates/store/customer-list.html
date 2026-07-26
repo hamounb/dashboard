@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+لیست مشتریان
+{% endblock title %}
+
+{% block content %}
+        <div class="content-wrapper">
+            <!-- Content -->
+
+            <div class="container-xxl flex-grow-1 container-p-y">
+              <div class="row g-4 mb-4">
+                <div class="col-sm-6 col-xl-3">
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="d-flex align-items-start justify-content-between">
+                        <div class="content-left">
+                          <span class="secondary-font fw-medium">تعداد کل مشتریان</span>
+                          <div class="d-flex align-items-baseline mt-2">
+                            <h4 class="mb-0 me-2">{{ count }}</h4>
+                          </div>
+                          <small>تحلیل مشتریان</small>
+                        </div>
+                        <span class="badge bg-label-success rounded p-2">
+                          <i class="bx bx-group bx-sm"></i>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="d-flex align-items-start justify-content-between">
+                        <div class="content-left">
+                          <span class="secondary-font fw-medium">مبلغ کل خرید مشتریان</span>
+                          <div class="d-flex align-items-baseline mt-2">
+                            <h4 class="mb-0 me-2">{{ customer_total_price}}</h4>
+                            <small class="text-success">(ریال)</small>
+                          </div>
+                          <small>مجموع کاربران</small>
+                        </div>
+                        <span class="badge bg-label-primary rounded p-2">
+                          <i class="bx bx-user bx-sm"></i>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Users List Table -->
+              <div class="card">
+                <h5 class="card-header heading-color">لیست مشتریان</h5>
+                <div class="table-responsive text-nowrap">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>کد مشتری</th>
+                        <th>نام و نام خانوادگی</th>
+                        <th>کل متراژ خرید</th>
+                        <th>کل مبلغ خرید</th>
+                      </tr>
+                    </thead>
+                    <tbody class="table-border-bottom-0">
+                    {% for customer in customer %}
+                      <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><a href="{% url 'store:customer-details' cid=customer.pk %}">{{ customer.code }}</a></td>
+                        <td><a href="{% url 'store:customer-details' cid=customer.pk %}">{{ customer.name }}</a></td>
+                        <td>
+                            {% for key, value in sales.items %}
+                            {% if customer.code == key %}
+                            {{ value.count }}
+                            {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% for key, value in sales.items %}
+                            {% if customer.code == key %}
+                            {{ value.price }}
+                            {% endif %}
+                            {% endfor %}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+        </div>
+{% endblock content %}
