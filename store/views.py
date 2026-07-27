@@ -3,6 +3,7 @@ from django import views
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import Q
+from django.db import IntegrityError
 from django.contrib import messages
 from .models import *
 from .forms import *
@@ -112,8 +113,11 @@ class ProductListView(PermissionRequiredMixin, views.View):
 
 COLUMN_MAP = {
     "code": ["کد مشتری", "customer_code", "کد مشتریان"],
+    "code_p": ["کد محصولات", "کد محصول", "کد کالا", "کد خدمت", "product_code"],
     "name": ["نام مشتری", "customer_name", "نام و نام خانوادگی"],
+    "name_p": ["نام محصول", "مشخصات", "مشخصات محصول", "نام محصولات", "نام کالا", "کالا", "خدمت", "product_name"],
     "count": ["متراژ", "مقدار", "count"],
+    "price": ["فی", "قیمت", "مبلغ", "price"],
     "price_total": ["مبلغ فروش", "مبلغ کل", "price_total"],
 }
 
@@ -141,36 +145,67 @@ class FileUploadView(views.View):
         context = {
             "form":form,
         }
-        instance = form.save()
         if form.is_valid():
-            if form.cleaned_data.get("category") == "فروش":
-                instance = form.save()
-                excel_path = instance.file.path
+            day = form.cleaned_data.get("day")
+            month = form.cleaned_data.get("month")
+            year = form.cleaned_data.get("year")
+            category = form.cleaned_data.get("category")
+            file = form.cleaned_data.get("file")
+            if str(category) == "sale":
+                print("mm")
+                try:
+                    date = DateModel.objects.get(day=day, month=month, year=year)
+                    print("yes")
+                except DateModel.DoesNotExist:
+                    date = DateModel(day=day, month=month, year=year)
+                    date.save()
+                    print("no")
+                upload = FileModel.objects.create(date=date, category=category, file=file)
+                upload.save()
+                excel_path = upload.file.path
                 df = pd.read_excel(excel_path)
                 col_code = find_column(df, COLUMN_MAP["code"])
                 col_name = find_column(df, COLUMN_MAP["name"])
+                col_code_p = find_column(df, COLUMN_MAP["code_p"])
+                col_name_p = find_column(df, COLUMN_MAP["name_p"])
                 col_count = find_column(df, COLUMN_MAP["count"])
+                col_price = find_column(df, COLUMN_MAP["price"])
                 col_price_total = find_column(df, COLUMN_MAP["price_total"])
                 if not all([col_code, col_name, col_count, col_price_total]):
                     raise ValueError("ستون‌های لازم در فایل اکسل پیدا نشدند!")
-                for _, row in df.iterrows():
-                    code = str(row[col_code]).strip()
-                    name = str(row[col_name]).strip()
-                    count = str(row[col_count]).strip()
-                    price_total = str(row[col_price_total]).strip()
-                    customer, _ = CustomerModel.objects.get_or_create(
-                        code=code,
-                        defaults={"name": name, "user_created": request.user}
-                    )
-                    SaleModel.objects.get_or_create(
-                        customer=customer,
-                        product=None,
-                        count=count,
-                        price="0",
-                        price_total=price_total,
-                        user_created=request.user
-                    )
-            return redirect("store:file-open", fid=instance.pk)
+                for row in df.iterrows():
+                    customer_code = str(row[col_code])
+                    customer_name = str(row[col_name])
+                    product_code = str(row[col_code_p])
+                    product_name = str(row[col_name_p])
+                    count = str(row[col_count])
+                    price = str(row[col_price])
+                    price_total = str(row[col_price_total])
+                    try:
+                        customer = CustomerModel.objects.get(code=customer_code)
+                    except CustomerModel.DoesNotExist:
+                        customer = CustomerModel.objects.create(code=customer_code, name=customer_name, user_created=request.user)
+                        customer.save()
+                    try:
+                        product = ProductModel.objects.get(code=product_code)
+                    except ProductModel.DoesNotExist:
+                        product = ProductModel.objects.create(code=product_code, name=product_name, user_created=request.user)
+                        product.save()
+                    try:
+                        sale = SaleModel.objects.create(
+                            date=date,
+                            product=product,
+                            customer=customer,
+                            count=count,
+                            price=price,
+                            price_total=price_total,
+                        )
+                        sale.save()
+                    except IntegrityError:
+                        pass
+            else:
+                print("false")
+            return render(request, "store/file-upload.html", context)
         else:
             return render(request, "store/file-upload.html", context)
 

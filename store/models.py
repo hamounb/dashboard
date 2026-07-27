@@ -139,7 +139,7 @@ class SaleModel(BaseModel):
             return f"{self.pk}"
     
     class Meta:
-        unique_together = ("date", "customer", "product", "count")
+        unique_together = ("date", "customer", "product", "count", "price")
         ordering = ["-date", "customer"]
         verbose_name = "فروش"
         verbose_name_plural = "فروش‌ها"

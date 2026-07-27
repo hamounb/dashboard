@@ -49,7 +49,7 @@ class ProductAdmin(admin.ModelAdmin):
 class SaleAdmin(admin.ModelAdmin):
     readonly_fields = ("user_created", "user_modified", "created_date", "modified_date")
     search_fields = ("date", "customer", "product", "price_total")
-    list_display = ("pk", "customer", "product")
+    list_display = ("pk", "date", "customer", "product")
     
     def save_model(self, request, obj, form, change):
         if change:
