@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}
+لیست فروش
+{% endblock title %}
+
+{% block content %}
+<div class="content-wrapper">
+            <!-- Content -->
+
+            <div class="container-xxl flex-grow-1 container-p-y">
+              <div class="row g-4 mb-4">
+                <div class="col-sm-6 col-xl-12">
+                  <div class="card">
+                    <div class="card-body">
+                      <div id="horizontalBarChart"></div>
+                      <canvas id="myChart" width="400" height="200"></canvas>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Users List Table -->
+              <div class="card">
+                <h5 class="card-header heading-color">لیست مشتریان</h5>
+                <div class="table-responsive text-nowrap">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>نام مشتری</th>
+                        <th>نام کالا</th>
+                        <th>مقدار</th>
+                        <th>فی</th>
+                        <th>مبلغ</th>
+                        <th>تاریخ</th>
+                      </tr>
+                    </thead>
+                    <tbody class="table-border-bottom-0">
+                    {% for sale in sale %}
+                      <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><a href="{% url 'store:customer-details' cid=sale.customer.pk %}">{{ sale.customer.name }}</a></td>
+                        <td><a href="#">{{ sale.product.name }}</a></td>
+                        <td>
+                            {{ sale.count }}
+                        </td>
+                        <td>
+                            {{ sale.price }}
+                        </td>
+                        <td>
+                            {{ sale.price_total }}
+                        </td>
+                        <td>
+                            {{ sale.date.year }}/{{ sale.date.month }}/{{ sale.date.day }}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+        </div>
+
+{% endblock content %}
+        {% block script %}
+<script>
+const ctx = document.getElementById('myChart');
+
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [{% for item in xvalue %}'{{ item|safe }}',{% endfor %}],
+        datasets: [{
+            label: 'Sample Data',
+            data: {{ yvalue }},
+            backgroundColor: 'steelblue'
+        }]
+    }
+});
+</script>
+        {% endblock script %}

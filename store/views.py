@@ -112,12 +112,12 @@ class ProductListView(PermissionRequiredMixin, views.View):
 
 
 COLUMN_MAP = {
-    "code": ["کد مشتری", "customer_code", "کد مشتریان"],
-    "code_p": ["کد محصولات", "کد محصول", "کد کالا", "کد خدمت", "product_code"],
-    "name": ["نام مشتری", "customer_name", "نام و نام خانوادگی"],
-    "name_p": ["نام محصول", "مشخصات", "مشخصات محصول", "نام محصولات", "نام کالا", "کالا", "خدمت", "product_name"],
+    "code": ["كد مشتري", "customer_code", "کد مشتریان"],
+    "code_p": ["کد محصولات", "کد محصول", "كد كالا", "کد خدمت", "product_code"],
+    "name": ["نام مشتري", "customer_name", "نام و نام خانوادگی"],
+    "name_p": ["نام محصول", "مشخصات", "مشخصات محصول", "نام محصولات", "نام کالا", "كالا", "خدمت", "product_name"],
     "count": ["متراژ", "مقدار", "count"],
-    "price": ["فی", "قیمت", "مبلغ", "price"],
+    "price": ["في", "قیمت", "مبلغ", "price"],
     "price_total": ["مبلغ فروش", "مبلغ کل", "price_total"],
 }
 
@@ -126,7 +126,7 @@ def find_column(df, possible_names):
         col_clean = str(col).strip().replace("\n", "").replace("\r", "")
         if col_clean in possible_names:
             return col_clean
-    return None
+    raise ValueError("ستون‌های لازم در فایل اکسل پیدا نشدند!")
     
 
 class FileUploadView(views.View):
@@ -152,7 +152,6 @@ class FileUploadView(views.View):
             category = form.cleaned_data.get("category")
             file = form.cleaned_data.get("file")
             if str(category) == "sale":
-                print("mm")
                 try:
                     date = DateModel.objects.get(day=day, month=month, year=year)
                     print("yes")
@@ -163,7 +162,7 @@ class FileUploadView(views.View):
                 upload = FileModel.objects.create(date=date, category=category, file=file)
                 upload.save()
                 excel_path = upload.file.path
-                df = pd.read_excel(excel_path)
+                df = pd.read_csv(excel_path,encoding="utf-8")
                 col_code = find_column(df, COLUMN_MAP["code"])
                 col_name = find_column(df, COLUMN_MAP["name"])
                 col_code_p = find_column(df, COLUMN_MAP["code_p"])
@@ -173,7 +172,7 @@ class FileUploadView(views.View):
                 col_price_total = find_column(df, COLUMN_MAP["price_total"])
                 if not all([col_code, col_name, col_count, col_price_total]):
                     raise ValueError("ستون‌های لازم در فایل اکسل پیدا نشدند!")
-                for row in df.iterrows():
+                for _,row in df.iterrows():
                     customer_code = str(row[col_code])
                     customer_name = str(row[col_name])
                     product_code = str(row[col_code_p])
@@ -210,36 +209,34 @@ class FileUploadView(views.View):
             return render(request, "store/file-upload.html", context)
 
 
-class FileOpenView(views.View):
+class SaleView(PermissionRequiredMixin, views.View):
+    login_url = "accounts:signin"
+    permission_required = []
 
-    def get(self, request, fid):
-        file = get_object_or_404(FileModel, pk=fid)
-        # source = file.file.url
-        # wb = openpyxl.load_workbook(f"/home/uif/Documents/Projects/Project Management Dashboard/dashboard/{source}")
-        excel_path = file.file.path
-        df = pd.read_excel(excel_path)
-        col_code = find_column(df, COLUMN_MAP["code"])
-        col_name = find_column(df, COLUMN_MAP["name"])
-        col_count = find_column(df, COLUMN_MAP["count"])
-        col_price_total = find_column(df, COLUMN_MAP["price_total"])
-        # اگر ستونی پیدا نشد، خطا بده
-        if not all([col_code, col_name, col_count, col_price_total]):
-            raise ValueError("ستون‌های لازم در فایل اکسل پیدا نشدند")
-        for _, row in df.iterrows():
-            code = str(row[col_code]).strip()
-            name = str(row[col_name]).strip()
-            count = str(row[col_count]).strip()
-            price_total = str(row[col_price_total]).strip()
-            customer, _ = CustomerModel.objects.get_or_create(
-                code=code,
-                defaults={"name": name, "user_created": request.user}
-            )
-            SaleModel.objects.create(
-                customer=customer,
-                product=None,
-                count=count,
-                price="0",
-                price_total=price_total,
-                user_created=request.user
-            )
-        return render(request, "store/file-open.html")
+    def get(self, request, did):
+        sale = SaleModel.objects.filter(date__pk=did)
+        xvalue = []
+        yvalue = []
+        total = 0
+        for i in sale:
+            if i.customer.name in xvalue:
+                pass
+            else:
+                x = str(i.customer.name).strip().replace("\n", "").replace("\r", "")
+                xvalue.append(x)
+        for i in xvalue:
+            for j in sale:
+                if i == j.customer.name:
+                    total += float(j.count)
+                else:
+                    pass
+            yvalue.append(total)
+            total = 0
+        print(xvalue)
+        print(yvalue)
+        context = {
+            "sale":sale,
+            "xvalue":xvalue,
+            "yvalue":yvalue,
+        }
+        return render(request, "store/sale.html", context)
