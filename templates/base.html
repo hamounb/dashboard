@@ -73,7 +73,7 @@
               </a>
             </li>
             <li class="menu-item">
-              <a href="" class="menu-link">
+              <a href="{% url 'store:date-list' %}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-layout"></i>
                 <div>فروش</div>
               </a>
@@ -538,6 +538,7 @@
     <!-- Vendors JS -->
     <script src="{% static 'assets/vendor/libs/apex-charts/apexcharts.js' %}"></script>
     <script src="{% static 'assets/vendor/libs/chartjs/chartjs.js' %}"></script>
+        <script src="{% static 'assets/js/charts-chartjs.js' %}"></script>
 
     <!-- Main JS -->
     <script src="{% static 'assets/js/main.js' %}"></script>

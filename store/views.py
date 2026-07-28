@@ -8,6 +8,7 @@ from django.contrib import messages
 from .models import *
 from .forms import *
 import pandas as pd
+from django.core.paginator import Paginator
 
 
 # Create your views here.
@@ -154,11 +155,9 @@ class FileUploadView(views.View):
             if str(category) == "sale":
                 try:
                     date = DateModel.objects.get(day=day, month=month, year=year)
-                    print("yes")
                 except DateModel.DoesNotExist:
                     date = DateModel(day=day, month=month, year=year)
                     date.save()
-                    print("no")
                 upload = FileModel.objects.create(date=date, category=category, file=file)
                 upload.save()
                 excel_path = upload.file.path
@@ -209,11 +208,12 @@ class FileUploadView(views.View):
             return render(request, "store/file-upload.html", context)
 
 
-class SaleView(PermissionRequiredMixin, views.View):
+class SaleDetailsView(PermissionRequiredMixin, views.View):
     login_url = "accounts:signin"
     permission_required = []
 
     def get(self, request, did):
+        date = get_object_or_404(DateModel, pk=did)
         sale = SaleModel.objects.filter(date__pk=did)
         xvalue = []
         yvalue = []
@@ -232,11 +232,44 @@ class SaleView(PermissionRequiredMixin, views.View):
                     pass
             yvalue.append(total)
             total = 0
-        print(xvalue)
-        print(yvalue)
+        paginator = Paginator(sale, 24)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        offset = (page_obj.number - 1) * paginator.per_page
         context = {
+            'page_obj':page_obj,
             "sale":sale,
+            "date":date,
             "xvalue":xvalue,
             "yvalue":yvalue,
+            "offset":offset,
         }
         return render(request, "store/sale.html", context)
+
+
+class ProductDetailsView(PermissionRequiredMixin, views.View):
+    login_url = "signin"
+    permission_required = []
+
+    def get(self, request, pid):
+        product = get_object_or_404(ProductModel, pk=pid)
+        sale = SaleModel.objects.filter(product=product)
+        result = {}
+        total_count = 0
+        total_price = 0
+        for i in sale:
+            total_count += float(i.count)
+            total_price += float(i.price_total)
+            if i.customer.name in result.keys():
+                result[i.customer.name]["count"] += float(i.count)
+                result[i.customer.name]["price"] += float(i.price_total)
+            else:
+                result[i.customer.name] = {"count":float(i.count), "price":float(i.price_total)}
+        context = {
+            "product":product,
+            "sale":sale,
+            "result":result,
+            "total_count":total_count,
+            "total_price":total_price,
+        }
+        return render(request, "store/product-details.html", context)
