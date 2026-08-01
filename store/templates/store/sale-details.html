@@ -1,7 +1,8 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block title %}
-لیست فروش
+لیست فروش | {{ date.year }}/{{ date.month }}/{{ date.day }}
 {% endblock title %}
 
 {% block content %}

@@ -3,6 +3,7 @@ from django import views
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import Q
+from django.db.models.functions import Cast
 from django.db import IntegrityError
 from django.contrib import messages
 from .models import *
@@ -15,15 +16,41 @@ from django.core.paginator import Paginator
 
 
 class Test(PermissionRequiredMixin, views.View):
-    login_url = 'accounts:signin'
+    login_url = "login"
     permission_required = ['crm.add_customermodel', 'crm.add_requestmodel']
 
     def get(self, request):
         return render(request, 'staff/test.html')
 
 
+class IndexView(PermissionRequiredMixin, views.View):
+    login_url = "login"
+    permission_required = []
+
+    def get(self, request):
+        date = DateModel.objects.order_by("-year", "-month", "-day").first()
+        sale = SaleModel.objects.filter(date=date)
+        total_price = 0
+        total_count = 0
+        for i in sale:
+            total_price += int(i.price_total)
+            total_count += float(i.count)
+        total_count = round(total_count, 4)
+        product = sale.annotate(my_int_field=Cast("count", output_field=models.IntegerField())).order_by("-my_int_field").first()
+        customer = sale.annotate(my_int_field=Cast("price_total", output_field=models.IntegerField())).order_by("-my_int_field").first()
+        context = {
+            "date":date,
+            "sale":sale,
+            "product":product,
+            "customer":customer,
+            "total_price":total_price,
+            "total_count":total_count,
+        }
+        return render(request, "store/index.html", context)
+
+
 class CustomerListView(PermissionRequiredMixin, views.View):
-    login_url = "accounts:signin"
+    login_url = "login"
     permission_required = ["store.view_customermodel"]
 
     def get(self, request):
@@ -59,7 +86,7 @@ class CustomerListView(PermissionRequiredMixin, views.View):
 
 
 class CustomerDetailsView(PermissionRequiredMixin, views.View):
-    login_url = "accounts:signin"
+    login_url = "login"
     permission_required = ["store.view_customermodel"]
 
     def get(self, request, cid):
@@ -87,8 +114,8 @@ class CustomerDetailsView(PermissionRequiredMixin, views.View):
     
 
 class DateListView(PermissionRequiredMixin, views.View):
-    login_url = "accounts:login"
-    permission_required = ["store.view_datemodel"]
+    login_url = "login"
+    permission_required = []
 
     def get(self, request):
         date = DateModel.objects.all().order_by("day")
@@ -101,7 +128,7 @@ class DateListView(PermissionRequiredMixin, views.View):
     
 
 class ProductListView(PermissionRequiredMixin, views.View):
-    login_url = "accounts:login"
+    login_url = "login"
     permission_required = ["store.view_productmodel"]
 
     def get(self, request):
@@ -109,7 +136,7 @@ class ProductListView(PermissionRequiredMixin, views.View):
         context = {
             "product":product,
         }
-        return render(request, "store/product-list.html")
+        return render(request, "store/product-list.html", context)
 
 
 COLUMN_MAP = {
@@ -209,7 +236,7 @@ class FileUploadView(views.View):
 
 
 class SaleDetailsView(PermissionRequiredMixin, views.View):
-    login_url = "accounts:signin"
+    login_url = "login"
     permission_required = []
 
     def get(self, request, did):
@@ -244,7 +271,7 @@ class SaleDetailsView(PermissionRequiredMixin, views.View):
             "yvalue":yvalue,
             "offset":offset,
         }
-        return render(request, "store/sale.html", context)
+        return render(request, "store/sale-details.html", context)
 
 
 class ProductDetailsView(PermissionRequiredMixin, views.View):

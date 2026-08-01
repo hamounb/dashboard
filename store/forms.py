@@ -1,5 +1,6 @@
 from django import forms
 from .models import *
+from persiantools import jdatetime
 
 
 class FileUploadForm(forms.Form):
@@ -53,11 +54,11 @@ class FileUploadForm(forms.Form):
         "30":"30",
         "31":"31",
     }
-    day = forms.CharField(label="روز", widget=forms.Select(attrs={"class":"form-select"}, choices=DAY_ITEMS))
+    day = forms.CharField(label="روز", widget=forms.Select(attrs={"class":"form-select", "placeholder":"selected"}, choices=DAY_ITEMS))
     month = forms.CharField(label="ماه", widget=forms.Select(attrs={"class":"form-select"}, choices=MONTH_ITEMS))
     year = forms.CharField(label="سال", widget=forms.Select(attrs={"class":"form-select"}, choices=YEAR_ITEMS))
-    category = forms.ModelChoiceField(label="عنوان فایل", queryset=CategoryFileModel.objects.all())
-    file = forms.FileField(label="فایل")
+    category = forms.ModelChoiceField(label="عنوان فایل", widget=forms.Select(attrs={"class":"form-select"}), queryset=CategoryFileModel.objects.all())
+    file = forms.FileField(label="فایل", widget=forms.FileInput(attrs={"class":"form-control"}))
 
 
 class DurationForm(forms.Form):
