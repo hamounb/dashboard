@@ -74,7 +74,265 @@
                     </div>
                   </div>
                 </div>
+
+                <div class="col-md-12 col-lg-8 col-xl-4 mb-4 order-0">
+                  <div class="card">
+                    <div class="card-body">
+                      <canvas id="pieChart" width="100" height="100"></canvas>                     
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-12 col-lg-8 col-xl-4 mb-4 order-0">
+                  <div class="card">
+                    <div class="card-body">
+                      <canvas id="pieChart2" width="100" height="100"></canvas>                     
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+
+                <div class="col-md-12 col-lg-8 col-xl-4 mb-4 order-0">
+                  <div class="card">
+                    <div class="card-body">
+                      <canvas id="pieChart3" width="100" height="100"></canvas>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-12 col-lg-8 col-xl-4 mb-4 order-0">
+                  <div class="card">
+                    <div class="card-body">
+                      <canvas id="pieChart4" width="100" height="100"></canvas>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
         </div>
 {% endblock content %}
+
+{% block script %}
+<script>
+const ctx = document.getElementById('myChart');
+
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [{% for item in duration_result.keys %}
+                    '{{ item }}',
+                    {% endfor %}],
+        datasets: [{
+            label: 'مقدار',
+            data: [{% for key,item in duration_result.items %}'{{ item.total_price|safe }}',{% endfor %}],
+            backgroundColor: 'steelblue'
+        }]
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+                text: 'نمودار فروش',
+                font: {
+                    size: 20
+                }
+            }
+        },
+        scales: {
+            x: {
+                title: {
+                    display: true,
+                    text: 'مشتری',
+                    font: {
+                        size: 16
+                    }
+                }
+            },
+            y: {
+                title: {
+                    display: true,
+                    text: 'مقدار فروش (متر)',
+                    font: {
+                        size: 16
+                    }
+                }
+            }
+        }
+    }
+});
+
+const pieCtx = document.getElementById('pieChart');
+const labels = [
+    {% for item in duration_result.keys %}
+        "{{ item|escapejs }}",
+    {% endfor %}
+];
+const dataValues = [
+    {% for key,item in duration_result.items %}
+        {{ item.count }},
+    {% endfor %}
+];
+const dynamicColors = dataValues.map(() => {
+    const r = Math.floor(Math.random() * 255);
+    const g = Math.floor(Math.random() * 255);
+    const b = Math.floor(Math.random() * 255);
+    return `rgba(${r}, ${g}, ${b}, 0.7)`;
+});
+new Chart(pieCtx, {
+    type: 'pie',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'سهم فروش',
+            data: dataValues,
+            backgroundColor: dynamicColors
+        }]
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+                text: 'مقدار فروش ۶ روز آخر',
+                font: { size: 20 }
+            },
+            legend: {
+                position: 'right',
+                labels: {
+                    font: { size: 14 }
+                }
+            }
+        }
+    }
+});
+const pieCtx2 = document.getElementById('pieChart2');
+const labels2 = [
+    {% for item in duration_result.keys %}
+        "{{ item|escapejs }}",
+    {% endfor %}
+];
+const dataValues2 = [
+    {% for key,item in duration_result.items %}
+        {{ item.total_price }},
+    {% endfor %}
+];
+const dynamicColors2 = dataValues.map(() => {
+    const r = Math.floor(Math.random() * 255);
+    const g = Math.floor(Math.random() * 255);
+    const b = Math.floor(Math.random() * 255);
+    return `rgba(${r}, ${g}, ${b}, 0.7)`;
+});
+new Chart(pieCtx2, {
+    type: 'pie',
+    data: {
+        labels: labels2,
+        datasets: [{
+            label: 'سهم فروش',
+            data: dataValues2,
+            backgroundColor: dynamicColors2
+        }]
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+                text: 'مبلغ فروش ۶ روز آخر',
+                font: { size: 20 }
+            },
+            legend: {
+                position: 'right',
+                labels: {
+                    font: { size: 14 }
+                }
+            }
+        }
+    }
+});
+const pieCtx3 = document.getElementById('pieChart3');
+const labels3 = [
+    {% for item in top_products %}
+        "{{ item.product__name|escapejs }}",
+    {% endfor %}
+];
+const dataValues3 = [
+    {% for item in top_products %}
+        {{ item.total_count }},
+    {% endfor %}
+];
+const dynamicColors3 = dataValues.map(() => {
+    const r = Math.floor(Math.random() * 255);
+    const g = Math.floor(Math.random() * 255);
+    const b = Math.floor(Math.random() * 255);
+    return `rgba(${r}, ${g}, ${b}, 0.7)`;
+});
+new Chart(pieCtx3, {
+    type: 'pie',
+    data: {
+        labels: labels3,
+        datasets: [{
+            label: 'سهم فروش',
+            data: dataValues3,
+            backgroundColor: dynamicColors3
+        }]
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+                text: '۱۰ محصول پر فروش',
+                font: { size: 20 }
+            },
+            legend: {
+                position: 'right',
+                labels: {
+                    font: { size: 14 }
+                }
+            }
+        }
+    }
+});
+const pieCtx4 = document.getElementById('pieChart4');
+const labels4 = [
+    {% for item in top_customers %}
+        "{{ item.customer__name|escapejs }}",
+    {% endfor %}
+];
+const dataValues4 = [
+    {% for item in top_customers %}
+        {{ item.total_price }},
+    {% endfor %}
+];
+const dynamicColors4 = dataValues.map(() => {
+    const r = Math.floor(Math.random() * 255);
+    const g = Math.floor(Math.random() * 255);
+    const b = Math.floor(Math.random() * 255);
+    return `rgba(${r}, ${g}, ${b}, 0.7)`;
+});
+new Chart(pieCtx4, {
+    type: 'pie',
+    data: {
+        labels: labels4,
+        datasets: [{
+            label: 'سهم فروش',
+            data: dataValues4,
+            backgroundColor: dynamicColors4
+        }]
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+                text: '۱۰ مشتری پر فروش',
+                font: { size: 20 }
+            },
+            legend: {
+                position: 'right',
+                labels: {
+                    font: { size: 14 }
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock script %}

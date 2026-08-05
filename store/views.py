@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django import views
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.db.models.functions import Cast
 from django.db import IntegrityError
 from django.contrib import messages
@@ -28,8 +28,39 @@ class IndexView(PermissionRequiredMixin, views.View):
     permission_required = []
 
     def get(self, request):
-        date = DateModel.objects.order_by("-year", "-month", "-day").first()
-        sale = SaleModel.objects.filter(date=date)
+        date = DateModel.objects.order_by("-year", "-month", "-day")
+        last_date = date.first()
+        duration = DateModel.objects.order_by("-year", "-month", "-day")[:6]
+        duration_result = {}
+        for i in duration:
+            sales = SaleModel.objects.filter(date=i)
+            for j in sales:
+                if f"{j.date.year}/{j.date.month}/{j.date.day}" in duration_result:
+                    duration_result[f"{j.date.year}/{j.date.month}/{j.date.day}"]["count"] += float(j.count)
+                    duration_result[f"{j.date.year}/{j.date.month}/{j.date.day}"]["count"] = round(duration_result[f"{j.date.year}/{j.date.month}/{j.date.day}"]["count"], 4)
+                    duration_result[f"{j.date.year}/{j.date.month}/{j.date.day}"]["total_price"] += int(j.price_total)
+                else:
+                    duration_result[f"{j.date.year}/{j.date.month}/{j.date.day}"] = {"count":0, "total_price":0}
+                    duration_result[f"{j.date.year}/{j.date.month}/{j.date.day}"]["count"] = float(j.count)
+                    duration_result[f"{j.date.year}/{j.date.month}/{j.date.day}"]["count"] = round(duration_result[f"{j.date.year}/{j.date.month}/{j.date.day}"]["count"], 4)
+                    duration_result[f"{j.date.year}/{j.date.month}/{j.date.day}"]["total_price"] = int(j.price_total)
+        top_products = (
+            SaleModel.objects
+            .filter(date__in=duration)
+            .annotate(count_int=Cast('count', models.IntegerField()))
+            .values('product__id', 'product__name')
+            .annotate(total_count=Sum('count_int'))
+            .order_by('-total_count')[:10]
+        )
+        top_customers = (
+                    SaleModel.objects
+                    .filter(date__in=duration)
+                    .annotate(count_int=Cast('price_total', models.IntegerField()))
+                    .values('customer__id', 'customer__name')
+                    .annotate(total_price=Sum('count_int'))
+                    .order_by('-total_price')[:10]
+                )
+        sale = SaleModel.objects.filter(date=last_date)
         total_price = 0
         total_count = 0
         for i in sale:
@@ -45,6 +76,9 @@ class IndexView(PermissionRequiredMixin, views.View):
             "customer":customer,
             "total_price":total_price,
             "total_count":total_count,
+            "duration_result":duration_result,
+            "top_products":top_products,
+            "top_customers":top_customers,
         }
         return render(request, "store/index.html", context)
 
@@ -125,6 +159,90 @@ class DateListView(PermissionRequiredMixin, views.View):
             "form":form,
         }
         return render(request, "store/date-list.html", context)
+
+
+class DateDurationView(PermissionRequiredMixin, views.View):
+    login_url = "login"
+    permission_required = []
+
+    def get(self, request, ddn):
+        if ddn == "3":
+            date = DateModel.objects.order_by("-year", "-month", "-day")[:3]
+        elif ddn == "7":
+            date = DateModel.objects.order_by("-year", "-month", "-day")[:7]
+        elif ddn == "30":
+            date = DateModel.objects.order_by("-year", "-month", "-day")[:30]
+        elif ddn == "90":
+            date = DateModel.objects.order_by("-year", "-month", "-day")[:90]
+        else:
+            pass
+        sales = SaleModel.objects.filter(date__in=date)
+        top_count = (
+            sales
+            .annotate(count_int=Cast('count', models.IntegerField()))
+            .values('product__code', 'product__name')
+            .annotate(total_count=Sum('count_int'))
+            .order_by('-total_count')[:10]
+        )
+        top_price = (
+            sales
+            .annotate(price_int=Cast('price_total', models.IntegerField()))
+            .values('customer__code', 'customer__name')
+            .annotate(total_price=Sum('price_int'))
+            .order_by('-total_price')[:10]
+        )
+        sales = sales.order_by("date")
+        paginator = Paginator(sales, 24)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        offset = (page_obj.number - 1) * paginator.per_page
+        context = {
+            "ddn":ddn,
+            "page_obj":page_obj,
+            "offset":offset,
+            "top_count":top_count,
+            "top_price":top_price,
+        }
+        return render(request, "store/date-duration.html", context)
+
+
+class SaleDetailsView(PermissionRequiredMixin, views.View):
+    login_url = "login"
+    permission_required = []
+
+    def get(self, request, did):
+        date = get_object_or_404(DateModel, pk=did)
+        sale = SaleModel.objects.filter(date__pk=did)
+        xvalue = []
+        yvalue = []
+        total = 0
+        for i in sale:
+            if i.customer.name in xvalue:
+                pass
+            else:
+                x = str(i.customer.name).strip().replace("\n", "").replace("\r", "")
+                xvalue.append(x)
+        for i in xvalue:
+            for j in sale:
+                if i == j.customer.name:
+                    total += float(j.count)
+                else:
+                    pass
+            yvalue.append(total)
+            total = 0
+        paginator = Paginator(sale, 24)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        offset = (page_obj.number - 1) * paginator.per_page
+        context = {
+            "page_obj":page_obj,
+            "sale":sale,
+            "date":date,
+            "xvalue":xvalue,
+            "yvalue":yvalue,
+            "offset":offset,
+        }
+        return render(request, "store/sale-details.html", context)
     
 
 class ProductListView(PermissionRequiredMixin, views.View):
@@ -137,6 +255,74 @@ class ProductListView(PermissionRequiredMixin, views.View):
             "product":product,
         }
         return render(request, "store/product-list.html", context)
+
+
+class ProductDetailsView(PermissionRequiredMixin, views.View):
+    login_url = "signin"
+    permission_required = []
+
+    def get(self, request, pid):
+        product = get_object_or_404(ProductModel, pk=pid)
+        date = DateModel.objects.order_by("-year", "-month", "-day")
+        d_3 = date[:3]
+        d_7 = date[:7]
+        d_30 = date[:30]
+        sales_3 = SaleModel.objects.filter(product__pk=pid).filter(date__in=d_3)
+        sales_7 = SaleModel.objects.filter(product__pk=pid).filter(date__in=d_7)
+        sales_30 = SaleModel.objects.filter(product__pk=pid).filter(date__in=d_30)
+        top_count_3 = (
+            sales_3
+            .annotate(count_int=Cast('count', models.IntegerField()))
+            .values('date__year', 'date__month', 'date__day')
+            .annotate(total_count=Sum('count_int'))
+            .order_by('-total_count')[:10]
+        )
+        top_price_3 = (
+            sales_3
+            .annotate(price_int=Cast('price_total', models.IntegerField()))
+            .values('customer__code', 'customer__name')
+            .annotate(total_price=Sum('price_int'))
+            .order_by('-total_price')[:10]
+        )
+        top_count_7 = (
+            sales_7
+            .annotate(count_int=Cast('count', models.IntegerField()))
+            .values('date__year', 'date__month', 'date__day')
+            .annotate(total_count=Sum('count_int'))
+            .order_by('-total_count')[:10]
+        )
+        top_price_7 = (
+            sales_7
+            .annotate(price_int=Cast('price_total', models.IntegerField()))
+            .values('customer__code', 'customer__name')
+            .annotate(total_price=Sum('price_int'))
+            .order_by('-total_price')[:10]
+        )
+        top_count_30 = (
+            sales_30
+            .annotate(count_int=Cast('count', models.IntegerField()))
+            .values('date__year', 'date__month', 'date__day')
+            .annotate(total_count=Sum('count_int'))
+            .order_by('-total_count')[:10]
+        )
+        top_price_30 = (
+            sales_30
+            .annotate(price_int=Cast('price_total', models.IntegerField()))
+            .values('customer__code', 'customer__name')
+            .annotate(total_price=Sum('price_int'))
+            .order_by('-total_price')[:10]
+        )
+        context = {
+            "product":product,
+            "top_count_3":top_count_3,
+            "top_price_3":top_price_3,
+            "top_count_7":top_count_7,
+            "top_price_7":top_price_7,
+            "top_count_30":top_count_30,
+            "top_price_30":top_price_30,
+        }
+        print(top_count_30, top_price_30, sales_30)
+        return render(request, "store/product-details.html", context)
 
 
 COLUMN_MAP = {
@@ -188,7 +374,7 @@ class FileUploadView(views.View):
                 upload = FileModel.objects.create(date=date, category=category, file=file)
                 upload.save()
                 excel_path = upload.file.path
-                df = pd.read_csv(excel_path,encoding="utf-8")
+                df = pd.read_excel(excel_path)
                 col_code = find_column(df, COLUMN_MAP["code"])
                 col_name = find_column(df, COLUMN_MAP["name"])
                 col_code_p = find_column(df, COLUMN_MAP["code_p"])
@@ -233,70 +419,3 @@ class FileUploadView(views.View):
             return render(request, "store/file-upload.html", context)
         else:
             return render(request, "store/file-upload.html", context)
-
-
-class SaleDetailsView(PermissionRequiredMixin, views.View):
-    login_url = "login"
-    permission_required = []
-
-    def get(self, request, did):
-        date = get_object_or_404(DateModel, pk=did)
-        sale = SaleModel.objects.filter(date__pk=did)
-        xvalue = []
-        yvalue = []
-        total = 0
-        for i in sale:
-            if i.customer.name in xvalue:
-                pass
-            else:
-                x = str(i.customer.name).strip().replace("\n", "").replace("\r", "")
-                xvalue.append(x)
-        for i in xvalue:
-            for j in sale:
-                if i == j.customer.name:
-                    total += float(j.count)
-                else:
-                    pass
-            yvalue.append(total)
-            total = 0
-        paginator = Paginator(sale, 24)
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-        offset = (page_obj.number - 1) * paginator.per_page
-        context = {
-            'page_obj':page_obj,
-            "sale":sale,
-            "date":date,
-            "xvalue":xvalue,
-            "yvalue":yvalue,
-            "offset":offset,
-        }
-        return render(request, "store/sale-details.html", context)
-
-
-class ProductDetailsView(PermissionRequiredMixin, views.View):
-    login_url = "signin"
-    permission_required = []
-
-    def get(self, request, pid):
-        product = get_object_or_404(ProductModel, pk=pid)
-        sale = SaleModel.objects.filter(product=product)
-        result = {}
-        total_count = 0
-        total_price = 0
-        for i in sale:
-            total_count += float(i.count)
-            total_price += float(i.price_total)
-            if i.customer.name in result.keys():
-                result[i.customer.name]["count"] += float(i.count)
-                result[i.customer.name]["price"] += float(i.price_total)
-            else:
-                result[i.customer.name] = {"count":float(i.count), "price":float(i.price_total)}
-        context = {
-            "product":product,
-            "sale":sale,
-            "result":result,
-            "total_count":total_count,
-            "total_price":total_price,
-        }
-        return render(request, "store/product-details.html", context)

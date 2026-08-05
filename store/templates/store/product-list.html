@@ -18,7 +18,7 @@
                         <th>ردیف</th>
                         <th>کد محصول</th>
                         <th>نام محصول</th>
-                        <th>مقدار فروش</th>
+                        <th>مشاهده جزئیات فروش</th>
                       </tr>
                     </thead>
                     <tbody class="table-border-bottom-0">
@@ -27,7 +27,7 @@
                         <td>{{ forloop.counter }}</td>
                         <td>{{ product.code }}</td>
                         <td>{{ product.name }}</td>
-                        <td></td>
+                        <td><a class="btn btn-primary" href="{% url 'store:product-details' pid=product.pk %}">بیشتر</a></td>
                       </tr>
                     {% endfor %}
                     </tbody>

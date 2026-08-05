@@ -10,6 +10,7 @@ urlpatterns = [
     path("customer/list/", CustomerListView.as_view(), name="customer-list"),
     path("customer/list/<int:cid>/", CustomerDetailsView.as_view(), name="customer-details"),
     path("date/list/", DateListView.as_view(), name="date-list"),
+    path("date/duration/<str:ddn>/", DateDurationView.as_view(), name="date-duration"),
     path("sale/<int:did>/", SaleDetailsView.as_view(), name="sale"),
     path("product/list/", ProductListView.as_view(), name="product-list"),
     path("product/details/<int:pid>/", ProductDetailsView.as_view(), name="product-details"),

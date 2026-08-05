@@ -10,58 +10,28 @@
 
             <div class="container-xxl flex-grow-1 container-p-y">
               <div class="row">
-                <!-- Form Separator -->
-                <div class="col-xxl">
-                  <div class="card">
-                    <h5 class="card-header heading-color">جستجو بر اساس تاریخ</h5>
-                    <form class="card-body" method="post">
-                      <h6 class="mb-b fw-normal">از تاریخ</h6>
-                      <div class="row mb-3">
-                        <label class="col-sm-3 col-form-label">روز</label>
-                        <div class="col-sm-9">
-                          {{ form.start_day }}
-                        </div>
-                      </div>
-                      <div class="row mb-3">
-                        <label class="col-sm-3 col-form-label" for="multicol-email">ماه</label>
-                        <div class="col-sm-9">
-                          {{ form.start_month }}
-                        </div>
-                      </div>
-                      <div class="row form-password-toggle">
-                        <label class="col-sm-3 col-form-label" for="multicol-password">سال</label>
-                        <div class="col-sm-9">
-                          {{ form.start_year }}
-                        </div>
-                      </div>
-                      <hr class="my-4 mx-n4">
-                      <h6 class="mb-3 fw-normal">تا تاریخ</h6>
-                      <div class="row mb-3">
-                        <label class="col-sm-3 col-form-label" for="multicol-full-name">روز</label>
-                        <div class="col-sm-9">
-                          {{ form.end_day }}
-                        </div>
-                      </div>
-                      <div class="row mb-3">
-                        <label class="col-sm-3 col-form-label" for="multicol-country">ماه</label>
-                        <div class="col-sm-9">
-                          {{ form.end_month }}
-                        </div>
-                      </div>
-                      <div class="row mb-3 select2-primary">
-                        <label class="col-sm-3 col-form-label" for="multicol-language">سال</label>
-                        <div class="col-sm-9">
-                          {{ form.end_year }}
-                        </div>
-                      </div>
-                      <div class="pt-4">
-                        <div class="row justify-content-end">
-                          <div class="col-sm-9">
-                            <button type="submit" class="btn btn-primary">جستجو</button>
+                <div class="col-md">
+                  <small class="text-light fw-semibold"></small>
+                  <div class="accordion mt-3 accordion-header-primary" id="accordionWithIcon">
+                    <div class="card accordion-item active">
+                      <h2 class="accordion-header d-flex align-items-center" style="line-height:3">
+                        <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#accordionWithIcon-1" aria-expanded="true">
+                          <i class="bx bx-bar-chart-alt-2 me-2"></i>
+                          مشاهده فروش برای
+                        </button>
+                      </h2>
+
+                      <div id="accordionWithIcon-1" class="accordion-collapse collapse">
+                        <div class="accordion-body lh-2 mb-3">
+                          <div class="demo-inline-spacing">
+                           <a href="{% url 'store:date-duration' ddn='3' %}" class="btn  rounded-pill btn-outline-primary">۳ روز</a>
+                           <a href="{% url 'store:date-duration' ddn='7' %}" class="btn  rounded-pill btn-outline-primary">۷ روز</a>
+                           <a href="{% url 'store:date-duration' ddn='30' %}" class="btn  rounded-pill btn-outline-primary">30 روز</a>
+                           <a href="{% url 'store:date-duration' ddn='90' %}" class="btn  rounded-pill btn-outline-primary">90 روز</a>
                           </div>
                         </div>
                       </div>
-                    </form>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -121,7 +91,7 @@
                           <span class="lh-2">
                             <p>فروردین: 
                                 {% for i in date %}
-                                {% if i.month == "1" %}
+                                {% if i.month == "01" %}
                                 <a class="btn btn-outline-primary" href="{% url 'store:sale' did=i.pk %}">{{ i.day }}</a>
                                 {% endif %}
                                 {% endfor %}
@@ -134,7 +104,7 @@
                           <span class="lh-2">
                             <p>اردیبهشت:
                                 {% for i in date %}
-                                {% if i.month == "2" %}
+                                {% if i.month == "02" %}
                                 <a class="btn btn-outline-primary" href="{% url 'store:sale' did=i.pk %}">{{ i.day }}</a>
                                 {% endif %}
                                 {% endfor %}
@@ -147,7 +117,7 @@
                           <span class="lh-2">
                             <p>خرداد:
                                 {% for i in date %}
-                                {% if i.month == "3" %}
+                                {% if i.month == "03" %}
                                 <a class="btn btn-outline-primary" href="{% url 'store:sale' did=i.pk %}">{{ i.day }}</a>
                                 {% endif %}
                                 {% endfor %}
@@ -160,7 +130,7 @@
                           <span class="lh-2">
                             <p>تیر:
                                 {% for i in date %}
-                                {% if i.month == "4" %}
+                                {% if i.month == "04" %}
                                 <a class="btn btn-outline-primary" href="{% url 'store:sale' did=i.pk %}">{{ i.day }}</a>
                                 {% endif %}
                                 {% endfor %}
@@ -173,7 +143,7 @@
                           <span class="lh-2">
                             <p>مرداد:
                                 {% for i in date %}
-                                {% if i.month == "5" %}
+                                {% if i.month == "05" %}
                                 <a class="btn btn-outline-primary" href="{% url 'store:sale' did=i.pk %}">{{ i.day }}</a>
                                 {% endif %}
                                 {% endfor %}
@@ -186,7 +156,7 @@
                           <span class="lh-2">
                             <p>شهریور:
                                 {% for i in date %}
-                                {% if i.month == "6" %}
+                                {% if i.month == "06" %}
                                 <a class="btn btn-outline-primary" href="{% url 'store:sale' did=i.pk %}">{{ i.day }}</a>
                                 {% endif %}
                                 {% endfor %}
@@ -199,7 +169,7 @@
                           <span class="lh-2">
                             <p>مهر:
                                 {% for i in date %}
-                                {% if i.month == "7" %}
+                                {% if i.month == "07" %}
                                 <a class="btn btn-outline-primary" href="{% url 'store:sale' did=i.pk %}">{{ i.day }}</a>
                                 {% endif %}
                                 {% endfor %}
@@ -212,7 +182,7 @@
                           <span class="lh-2">
                             <p>آبان:
                                 {% for i in date %}
-                                {% if i.month == "8" %}
+                                {% if i.month == "08" %}
                                 <a class="btn btn-outline-primary" href="{% url 'store:sale' did=i.pk %}">{{ i.day }}</a>
                                 {% endif %}
                                 {% endfor %}
@@ -225,7 +195,7 @@
                           <span class="lh-2">
                             <p>آذر:
                                 {% for i in date %}
-                                {% if i.month == "9" %}
+                                {% if i.month == "09" %}
                                 <a class="btn btn-outline-primary" href="{% url 'store:sale' did=i.pk %}">{{ i.day }}</a>
                                 {% endif %}
                                 {% endfor %}
