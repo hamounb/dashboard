@@ -1,8 +1,9 @@
 {% extends "base.html" %}
+{% load humanize %}
 {% load static %}
 
 {% block title %}
-لیست مشتریان | {{ customer.code }}-{{ customer.name }}
+مشتری | {{ customer.code }}-{{ customer.name }}
 {% endblock title %}
 
 {% block content %}
@@ -10,80 +11,251 @@
             <!-- Content -->
 
             <div class="container-xxl flex-grow-1 container-p-y">
-              <div class="row g-4 mb-4">
-                <div class="col-sm-6 col-xl-3">
-                  <div class="card">
-                    <div class="card-body">
-                      <div class="d-flex align-items-start justify-content-between">
-                        <div class="content-left">
-                          <span class="secondary-font fw-medium">متراژ کل فروش</span>
-                          <div class="d-flex align-items-baseline mt-2">
-                            <h4 class="mb-0 me-2">{{ total_count }}</h4>
-                            <small class="text-success">(متر)</small>
+              <div class="row g-4 mb-2">
+                <div class="col-sm-12 col-lg-4 col-xl-4">
+                  <div class="row">
+                    <div class="col-sm-12 col-xl-12 mb-3">
+                      <div class="card">
+                        <div class="card-body text-center">
+                          <div class="avatar avatar-md mx-auto mb-3">
+                            <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-cube fs-3"></i></span>
                           </div>
-                          <small></small>
+                          <span class="d-block mb-1 text-nowrap">کل مقدار فروش</span>
+                          <h2 class="mb-n3">{{ total_count }}</h2>
+                          <small class="text-success">(متر)</small>
                         </div>
-                        <span class="badge bg-label-success rounded p-2">
-                          <i class="bx bx-group bx-sm"></i>
-                        </span>
+                      </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-12">
+                      <div class="card">
+                        <div class="card-body text-center">
+                          <div class="avatar avatar-md mx-auto mb-3">
+                            <span class="avatar-initial rounded-circle bg-label-warning"><i class="bx bx-dollar fs-4"></i></span>
+                          </div>
+                          <span class="d-block mb-1 text-nowrap">کل مبلغ فروش</span>
+                          <h2 class="mb-n3">{{ total_price|intcomma:False }}</h2>
+                          <small class="text-success">(ریال)</small>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div class="col-sm-6 col-xl-3">
+                <div class="col-sm-12 col-lg-4 col-xl-4">
                   <div class="card">
                     <div class="card-body">
-                      <div class="d-flex align-items-start justify-content-between">
-                        <div class="content-left">
-                          <span class="secondary-font fw-medium">مبلغ کل فروش </span>
-                          <div class="d-flex align-items-baseline mt-2">
-                            <h4 class="mb-0 me-2">{{ total_price}}</h4>
-                            <small class="text-success">(ریال)</small>
-                          </div>
-                          <small></small>
-                        </div>
-                        <span class="badge bg-label-primary rounded p-2">
-                          <i class="bx bx-user bx-sm"></i>
-                        </span>
-                      </div>
+                      <canvas id="pieChart" width="100" height="100"></canvas>                     
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-12 col-lg-4 col-xl-4 mb-2">
+                  <div class="card">
+                    <div class="card-body">
+                      <canvas id="pieChart2" width="100" height="100"></canvas>                     
                     </div>
                   </div>
                 </div>
               </div>
-              <!-- Users List Table -->
-              <div class="card">
-                <h5 class="card-header heading-color">لیست اقلام فروش برای مشتری: {{ customer.code }} - {{ customer.name }}</h5>
-                <div class="table-responsive text-nowrap">
-                  <table class="table table-hover">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>کد محصول</th>
-                        <th>نام محصول</th>
-                        <th>متراژ</th>
-                        <th>تاریخ</th>
-                        <th>مبلغ خرید</th>
-                      </tr>
-                    </thead>
-                    <tbody class="table-border-bottom-0">
-                    {% for sale in sale %}
-                      <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td><a href="#">{{ product.code }}</a></td>
-                        <td><a href="#">{{ product.name }}</a></td>
-                        <td>{{ sale.count }}</td>
-                        <td>
-                            {{ sale.date.year }}/{{ sale.date.month }}/{{ sale.date.day }}
-                        </td>
-                        <td>
-                            {{ sale.price_total }}
-                        </td>
-                      </tr>
+                <div class="row">
+                    {% for sale in page_obj %}
+                    <div class="col-md-6 col-lg-4 col-xl-3 mb-2 order-0">
+                        <div class="card h-100">
+                          <div class="card-header d-flex align-items-center justify-content-between">
+                            <h5 class="card-title mb-0">{{ forloop.counter|add:offset }} - {{ sale.customer.name }}</h5>
+                            <div class="dropdown primary-font">
+                                {{ sale.date.year }}/{{ sale.date.month }}/{{ sale.date.day }}
+                            </div>
+                          </div>
+                          <div class="card-body pb-3">
+                            <ul class="p-0 m-0">
+                              <li class="d-flex align-items-center mb-3">
+                                <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                  <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-cube"></i></span>
+                                </div>
+                                <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                  <div class="me-2">
+                                    <p class="mb-0">{{ sale.product.name }}</p>
+                                  </div>
+                                  <div class="item-progress"></div>
+                                </div>
+                              </li>
+                              <li class="d-flex align-items-center mb-3">
+                                <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                  <span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-pie-chart-alt"></i></span>
+                                </div>
+                                <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                  <div class="me-2">
+                                    <p class="mb-0">مقدار</p>
+                                  </div>
+                                  <div class="item-progress">{{ sale.count }}</div>
+                                </div>
+                              </li>
+                              <li class="d-flex align-items-center mb-3">
+                                <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                  <span class="avatar-initial rounded-circle bg-label-danger"><i class="bx bx-credit-card"></i></span>
+                                </div>
+                                <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                  <div class="me-2">
+                                    <p class="mb-0">فی</p>
+                                  </div>
+                                  <div class="item-progress">{{ sale.price|intcomma:False }}</div>
+                                </div>
+                              </li>
+                              <li class="d-flex align-items-center">
+                                <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                  <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-dollar"></i></span>
+                                </div>
+                                <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                  <div class="me-2">
+                                    <p class="mb-0">مبلغ کل</p>
+                                  </div>
+                                  <div class="item-progress">{{ sale.price_total|intcomma:False }}</div>
+                                </div>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                    </div>
                     {% endfor %}
-                    </tbody>
-                  </table>
                 </div>
-              </div>
+                {% if page_obj.has_next or page_obj.has_previous %}
+                  <nav aria-label="Page navigation" class="mt-2">
+                      <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+											  {% if page_obj.number == 2 %}
+                        <li class="page-item first">
+                          <a class="page-link" href="?{{ request.GET.urlencode }}&page=1"><i class="tf-icon bx bx-chevrons-left"></i></a>
+                        </li>
+                        <li class="page-item">
+                          <a class="page-link" href="?{{ request.GET.urlencode }}&page=1">1</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item first">
+                          <a class="page-link" href="?{{ request.GET.urlencode }}&page=1"><i class="tf-icon bx bx-chevrons-left"></i></a>
+                        </li>
+                        <li class="page-item prev">
+                          <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}"><i class="tf-icon bx bx-chevron-left"></i></a>
+                        </li>
+                        <li class="page-item">
+                          <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a>
+                        {% endif %}
+                        {% endif %}
+                        <li class="page-item active">
+                          <a class="page-link" href="javascript:void(0);">{{ page_obj.number }}</a>
+                        </li>
+                        {% if page_obj.has_next %}
+											  {% if page_obj.next_page_number == page_obj.paginator.num_pages %}
+                        <li class="page-item">
+                          <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+                        </li>
+                        <li class="page-item last">
+                          <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}"><i class="tf-icon bx bx-chevrons-right"></i></a>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                          <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+                        </li>
+                        <li class="page-item next">
+                          <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}"><i class="tf-icon bx bx-chevron-right"></i></a>
+                        </li>
+                        <li class="page-item last">
+                          <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.paginator.num_pages }}"><i class="tf-icon bx bx-chevrons-right"></i></a>
+                        </li>
+                        {% endif %}
+                        {% endif %}
+                      </ul>
+                  </nav>
+                    {% endif %}
             </div>
         </div>
 {% endblock content %}
+{% block script %}
+<script>
+
+const pieCtx = document.getElementById('pieChart');
+const labels = [
+    {% for item in top_count %}
+        "{{ item.product__name|escapejs }}",
+    {% endfor %}
+];
+const dataValues = [
+    {% for item in top_count %}
+        {{ item.total_count }},
+    {% endfor %}
+];
+const dynamicColors = dataValues.map(() => {
+    const r = Math.floor(Math.random() * 255);
+    const g = Math.floor(Math.random() * 255);
+    const b = Math.floor(Math.random() * 255);
+    return `rgba(${r}, ${g}, ${b}, 0.7)`;
+});
+new Chart(pieCtx, {
+    type: 'pie',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'سهم فروش',
+            data: dataValues,
+            backgroundColor: dynamicColors
+        }]
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+                text: 'مقدار فروش برای {{ customer.name }}',
+                font: { size: 20 }
+            },
+            legend: {
+                position: 'right',
+                labels: {
+                    font: { size: 14 }
+                }
+            }
+        }
+    }
+});
+const pieCtx2 = document.getElementById('pieChart2');
+const labels2 = [
+    {% for item in top_price %}
+        "{{ item.product__name|escapejs }}",
+    {% endfor %}
+];
+const dataValues2 = [
+    {% for item in top_price %}
+        {{ item.total_price }},
+    {% endfor %}
+];
+const dynamicColors2 = dataValues.map(() => {
+    const r = Math.floor(Math.random() * 255);
+    const g = Math.floor(Math.random() * 255);
+    const b = Math.floor(Math.random() * 255);
+    return `rgba(${r}, ${g}, ${b}, 0.7)`;
+});
+new Chart(pieCtx2, {
+    type: 'pie',
+    data: {
+        labels: labels2,
+        datasets: [{
+            label: 'سهم فروش',
+            data: dataValues2,
+            backgroundColor: dynamicColors2
+        }]
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+                text: 'مبلغ فروش برای {{ customer.name }}',
+                font: { size: 20 }
+            },
+            legend: {
+                position: 'right',
+                labels: {
+                    font: { size: 14 }
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock script %}

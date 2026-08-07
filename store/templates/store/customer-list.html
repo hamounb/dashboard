@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load humanize %}
 {% load static %}
 
 {% block title %}
@@ -13,82 +14,134 @@
               <div class="row g-4 mb-4">
                 <div class="col-sm-6 col-xl-3">
                   <div class="card">
-                    <div class="card-body">
-                      <div class="d-flex align-items-start justify-content-between">
-                        <div class="content-left">
-                          <span class="secondary-font fw-medium">تعداد کل مشتریان</span>
-                          <div class="d-flex align-items-baseline mt-2">
-                            <h4 class="mb-0 me-2">{{ count }}</h4>
-                          </div>
-                          <small>تحلیل مشتریان</small>
-                        </div>
-                        <span class="badge bg-label-success rounded p-2">
-                          <i class="bx bx-group bx-sm"></i>
-                        </span>
+                    <div class="card-body text-center">
+                      <div class="avatar avatar-md mx-auto mb-3">
+                        <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-group fs-3"></i></span>
                       </div>
+                      <span class="d-block mb-1 text-nowrap">تعداد کل مشتریان</span>
+                      <h2 class="mb-1">{{ count }}</h2>
+                      <small class="text-primary">(عدد)</small>
                     </div>
                   </div>
                 </div>
                 <div class="col-sm-6 col-xl-3">
                   <div class="card">
-                    <div class="card-body">
-                      <div class="d-flex align-items-start justify-content-between">
-                        <div class="content-left">
-                          <span class="secondary-font fw-medium">مبلغ کل خرید مشتریان</span>
-                          <div class="d-flex align-items-baseline mt-2">
-                            <h4 class="mb-0 me-2">{{ customer_total_price}}</h4>
-                            <small class="text-success">(ریال)</small>
-                          </div>
-                          <small>مجموع کاربران</small>
-                        </div>
-                        <span class="badge bg-label-primary rounded p-2">
-                          <i class="bx bx-user bx-sm"></i>
-                        </span>
+                    <div class="card-body text-center">
+                      <div class="avatar avatar-md mx-auto mb-3">
+                        <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-dollar fs-4"></i></span>
                       </div>
+                      <span class="d-block mb-1 text-nowrap">مبلغ کل خرید مشتریان</span>
+                      <h2 class="mb-1">{{ customer_total_price|intcomma:False }}</h2>
+                      <small class="text-success">(ریال)</small>
                     </div>
                   </div>
                 </div>
               </div>
-              <!-- Users List Table -->
-              <div class="card">
-                <h5 class="card-header heading-color">لیست مشتریان</h5>
-                <div class="table-responsive text-nowrap">
-                  <table class="table table-hover">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>کد مشتری</th>
-                        <th>نام و نام خانوادگی</th>
-                        <th>کل متراژ خرید</th>
-                        <th>کل مبلغ خرید</th>
-                      </tr>
-                    </thead>
-                    <tbody class="table-border-bottom-0">
-                    {% for customer in customer %}
-                      <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td><a href="{% url 'store:customer-details' cid=customer.pk %}">{{ customer.code }}</a></td>
-                        <td><a href="{% url 'store:customer-details' cid=customer.pk %}">{{ customer.name }}</a></td>
-                        <td>
-                            {% for key, value in sales.items %}
-                            {% if customer.code == key %}
-                            {{ value.count }}
-                            {% endif %}
-                            {% endfor %}
-                        </td>
-                        <td>
-                            {% for key, value in sales.items %}
-                            {% if customer.code == key %}
-                            {{ value.price }}
-                            {% endif %}
-                            {% endfor %}
-                        </td>
-                      </tr>
-                    {% endfor %}
-                    </tbody>
-                  </table>
-                </div>
+
+              <div class="row">
+                  {% for customer in page_obj %}
+                  <div class="col-md-6 col-lg-4 col-xl-3 mb-2 order-0">
+                      <div class="card h-100">
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                          <h5 class="card-title mb-0">
+                            <a href="{% url 'store:customer-details' cid=customer.pk %}">
+                              {{ forloop.counter|add:offset }} - {{ customer.name }}
+                            </a>
+                            </h5>
+                          <div class="dropdown primary-font">
+                              {{ customer.code }}
+                          </div>
+                        </div>
+                        <div class="card-body pb-3">
+                          <ul class="p-0 m-0">
+                            <li class="d-flex align-items-center mb-3">
+                              <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                <span class="avatar-initial rounded-circle bg-label-danger"><i class="bx bx-cube"></i></span>
+                              </div>
+                              <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                <div class="me-2">
+                                  <p class="mb-0">مقدار</p>
+                                </div>
+                                <div class="item-progress">
+                                  {% for key, value in sales.items %}
+                                    {% if customer.code == key %}
+                                    {{ value.count }}
+                                    {% endif %}
+                                  {% endfor %}
+                                </div>
+                              </div>
+                            </li>
+                            <li class="d-flex align-items-center">
+                              <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-dollar"></i></span>
+                              </div>
+                              <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                <div class="me-2">
+                                  <p class="mb-0">مبلغ کل</p>
+                                </div>
+                                <div class="item-progress">
+                                  {% for key, value in sales.items %}
+                                    {% if customer.code == key %}
+                                    {{ value.price|intcomma:False }}
+                                    {% endif %}
+                                  {% endfor %}
+                                </div>
+                              </div>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                  </div>
+                  {% endfor %}
               </div>
+              {% if page_obj.has_next or page_obj.has_previous %}
+                <nav aria-label="Page navigation" class="mt-2">
+                    <ul class="pagination justify-content-center">
+                      {% if page_obj.has_previous %}
+										  {% if page_obj.number == 2 %}
+                      <li class="page-item first">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page=1"><i class="tf-icon bx bx-chevrons-left"></i></a>
+                      </li>
+                      <li class="page-item">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page=1">1</a>
+                      </li>
+                      {% else %}
+                      <li class="page-item first">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page=1"><i class="tf-icon bx bx-chevrons-left"></i></a>
+                      </li>
+                      <li class="page-item prev">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}"><i class="tf-icon bx bx-chevron-left"></i></a>
+                      </li>
+                      <li class="page-item">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a>
+                      {% endif %}
+                      {% endif %}
+                      <li class="page-item active">
+                        <a class="page-link" href="javascript:void(0);">{{ page_obj.number }}</a>
+                      </li>
+                      {% if page_obj.has_next %}
+										  {% if page_obj.next_page_number == page_obj.paginator.num_pages %}
+                      <li class="page-item">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+                      </li>
+                      <li class="page-item last">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}"><i class="tf-icon bx bx-chevrons-right"></i></a>
+                      </li>
+                      {% else %}
+                      <li class="page-item">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+                      </li>
+                      <li class="page-item next">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}"><i class="tf-icon bx bx-chevron-right"></i></a>
+                      </li>
+                      <li class="page-item last">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.paginator.num_pages }}"><i class="tf-icon bx bx-chevrons-right"></i></a>
+                      </li>
+                      {% endif %}
+                      {% endif %}
+                    </ul>
+                </nav>
+                  {% endif %}
             </div>
         </div>
 {% endblock content %}

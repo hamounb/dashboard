@@ -88,13 +88,13 @@ class CustomerListView(PermissionRequiredMixin, views.View):
     permission_required = ["store.view_customermodel"]
 
     def get(self, request):
-        customer = CustomerModel.objects.all()
-        count = customer.count()
+        customers = CustomerModel.objects.all()
+        count = customers.count()
         customer_total_price = 0
         total_count = 0
         total_price = 0
         sales = {}
-        for i in customer:
+        for i in customers:
             sale = SaleModel.objects.filter(customer=i)
             total_count = 0
             total_price = 0
@@ -105,13 +105,18 @@ class CustomerListView(PermissionRequiredMixin, views.View):
                 else:
                     pass
                 if j.price_total.isnumeric():
-                    total_price += float(j.price_total)
+                    total_price += int(j.price_total)
                 else:
                     pass
             customer_total_price += total_price
             sales[i.code] = {"count":total_count, "price":total_price}
+        paginator = Paginator(customers, 24)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        offset = (page_obj.number - 1) * paginator.per_page
         context = {
-            "customer":customer,
+            "page_obj":page_obj,
+            "offset":offset,
             "sales":sales,
             "count":count,
             "customer_total_price":customer_total_price,
@@ -125,24 +130,44 @@ class CustomerDetailsView(PermissionRequiredMixin, views.View):
 
     def get(self, request, cid):
         customer = get_object_or_404(CustomerModel, pk=cid)
-        sale = SaleModel.objects.filter(customer=customer)
-        total_count = 0
-        total_price = 0
-        for i in sale:
-            if i.count:
-                total_count += float(i.count)
-                total_count = round(total_count, 4)
-            else:
-                pass
-            if i.price_total.isnumeric():
-                total_price += float(i.price_total)
-            else:
-                pass
+        sales = SaleModel.objects.filter(customer=customer)
+        top_count = (
+            sales
+            .annotate(count_int=Cast('count', models.IntegerField()))
+            .values('product__code', 'product__name')
+            .annotate(total_count=Sum('count_int'))
+            .order_by('-total_count')[:10]
+        )
+        total_count = (
+            sales
+            .annotate(count_int=Cast('count', models.IntegerField()))
+            .aggregate(total_count=Sum('count_int'))['total_count']
+        )
+        top_price = (
+            sales
+            .annotate(price_int=Cast('price_total', models.IntegerField()))
+            .values('product__code', 'product__name')
+            .annotate(total_price=Sum('price_int'))
+            .order_by('-total_price')[:10]
+        )
+        total_price = (
+            sales
+            .annotate(count_int=Cast('price_total', models.IntegerField()))
+            .aggregate(total_price=Sum('count_int'))['total_price']
+        )
+        sales = sales.order_by("date")
+        paginator = Paginator(sales, 24)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        offset = (page_obj.number - 1) * paginator.per_page
         context = {
+            "page_obj":page_obj,
+            "offset":offset,
             "customer":customer,
-            "sale":sale,
+            "top_count":top_count,
             "total_count":total_count,
             "total_price":total_price,
+            "top_price":top_price,
         }
         return render(request, "store/customer-details.html", context)
     
@@ -340,12 +365,11 @@ def find_column(df, possible_names):
         col_clean = str(col).strip().replace("\n", "").replace("\r", "")
         if col_clean in possible_names:
             return col_clean
-    raise ValueError("ستون‌های لازم در فایل اکسل پیدا نشدند!")
     
 
 class FileUploadView(views.View):
     login_url = ""
-    permission_required = ["store.add_filemodel"]
+    permission_required = []
 
     def get(self, request):
         form = FileUploadForm()
@@ -365,7 +389,7 @@ class FileUploadView(views.View):
             year = form.cleaned_data.get("year")
             category = form.cleaned_data.get("category")
             file = form.cleaned_data.get("file")
-            if str(category) == "sale":
+            if str(category) == "sale" or str(category) == "فروش":
                 try:
                     date = DateModel.objects.get(day=day, month=month, year=year)
                 except DateModel.DoesNotExist:
@@ -383,7 +407,8 @@ class FileUploadView(views.View):
                 col_price = find_column(df, COLUMN_MAP["price"])
                 col_price_total = find_column(df, COLUMN_MAP["price_total"])
                 if not all([col_code, col_name, col_count, col_price_total]):
-                    raise ValueError("ستون‌های لازم در فایل اکسل پیدا نشدند!")
+                    messages.error(request, "ستون‌های مورد نظر در این فایل پیدا نشدند!")
+                    return render(request, "store/file-upload.html", context)
                 for _,row in df.iterrows():
                     customer_code = str(row[col_code])
                     customer_name = str(row[col_name])

@@ -68,31 +68,37 @@
           <ul class="menu-inner py-1">
             <li class="menu-item active open">
               <a href="{% url 'store:index' %}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                <i class="menu-icon tf-icons fas fa-house" style="font-size:1rem"></i>
                 <div>داشبورد</div>
               </a>
             </li>
             <li class="menu-item">
+              <a href="{% url 'store:customer-list' %}" class="menu-link">
+                <i class="menu-icon fas fa-user-group" style="font-size:1rem"></i>
+                <div>مشتریان</div>
+              </a>
+            </li>
+            <li class="menu-item">
               <a href="{% url 'store:date-list' %}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-layout"></i>
+                <i class="menu-icon fas fa-credit-card" style="font-size:1rem"></i>
                 <div>فروش</div>
               </a>
             </li>
             <li class="menu-item">
               <a href="" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-layout"></i>
+                <i class="menu-icon fas fa-warehouse" style="font-size:1rem"></i>
                 <div>انبار</div>
               </a>
             </li>
             <li class="menu-item">
               <a href="{% url 'store:product-list' %}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-layout"></i>
+                <i class="menu-icon fa fa-layer-group" style="font-size:1rem"></i>
                 <div>محصولات</div>
               </a>
             </li>
             <li class="menu-item">
               <a href="{% url 'store:file-upload' %}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-layout"></i>
+                <i class="menu-icon fa-solid fa-file-excel" style="font-size:1rem"></i>
                 <div>بارگذاری فایل</div>
               </a>
             </li>
