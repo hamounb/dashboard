@@ -22,7 +22,7 @@
                           </div>
                           <span class="d-block mb-1 text-nowrap">کل مقدار فروش</span>
                           <h2 class="mb-n3">{{ total_count }}</h2>
-                          <small class="text-success">(متر)</small>
+                          <small class="text-primary">(متر)</small>
                         </div>
                       </div>
                     </div>
@@ -30,7 +30,7 @@
                       <div class="card">
                         <div class="card-body text-center">
                           <div class="avatar avatar-md mx-auto mb-3">
-                            <span class="avatar-initial rounded-circle bg-label-warning"><i class="bx bx-dollar fs-4"></i></span>
+                            <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-dollar fs-4"></i></span>
                           </div>
                           <span class="d-block mb-1 text-nowrap">کل مبلغ فروش</span>
                           <h2 class="mb-n3">{{ total_price|intcomma:False }}</h2>
@@ -57,10 +57,10 @@
               </div>
                 <div class="row">
                     {% for sale in page_obj %}
-                    <div class="col-md-6 col-lg-4 col-xl-3 mb-2 order-0">
+                    <div class="col-md-6 col-lg-4 col-xl-4 mb-2 order-0">
                         <div class="card h-100">
                           <div class="card-header d-flex align-items-center justify-content-between">
-                            <h5 class="card-title mb-0">{{ forloop.counter|add:offset }} - {{ sale.customer.name }}</h5>
+                            <h5 class="card-title mb-0">{{ forloop.counter|add:offset }}. {{ sale.product.name }}</h5>
                             <div class="dropdown primary-font">
                                 {{ sale.date.year }}/{{ sale.date.month }}/{{ sale.date.day }}
                             </div>
@@ -73,9 +73,9 @@
                                 </div>
                                 <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
                                   <div class="me-2">
-                                    <p class="mb-0">{{ sale.product.name }}</p>
+                                    <p class="mb-0">کد کالا</p>
                                   </div>
-                                  <div class="item-progress"></div>
+                                  <div class="item-progress">{{ sale.product.code }}</div>
                                 </div>
                               </li>
                               <li class="d-flex align-items-center mb-3">

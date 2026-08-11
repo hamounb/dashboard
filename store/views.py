@@ -238,23 +238,20 @@ class SaleDetailsView(PermissionRequiredMixin, views.View):
     def get(self, request, did):
         date = get_object_or_404(DateModel, pk=did)
         sale = SaleModel.objects.filter(date__pk=did)
-        xvalue = []
-        yvalue = []
-        total = 0
-        for i in sale:
-            if i.customer.name in xvalue:
-                pass
-            else:
-                x = str(i.customer.name).strip().replace("\n", "").replace("\r", "")
-                xvalue.append(x)
-        for i in xvalue:
-            for j in sale:
-                if i == j.customer.name:
-                    total += float(j.count)
-                else:
-                    pass
-            yvalue.append(total)
-            total = 0
+        top_count = (
+            sale
+            .annotate(count_int=Cast('count', models.IntegerField()))
+            .values('product__code', 'product__name')
+            .annotate(total_count=Sum('count_int'))
+            .order_by('-total_count')[:5]
+        )
+        top_price = (
+            sale
+            .annotate(price_int=Cast('price_total', models.IntegerField()))
+            .values('customer__code', 'customer__name')
+            .annotate(total_price=Sum('price_int'))
+            .order_by('-total_price')[:5]
+        )
         paginator = Paginator(sale, 24)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
@@ -263,8 +260,8 @@ class SaleDetailsView(PermissionRequiredMixin, views.View):
             "page_obj":page_obj,
             "sale":sale,
             "date":date,
-            "xvalue":xvalue,
-            "yvalue":yvalue,
+            "top_count":top_count,
+            "top_price":top_price,
             "offset":offset,
         }
         return render(request, "store/sale-details.html", context)
@@ -410,13 +407,13 @@ class FileUploadView(views.View):
                     messages.error(request, "ستون‌های مورد نظر در این فایل پیدا نشدند!")
                     return render(request, "store/file-upload.html", context)
                 for _,row in df.iterrows():
-                    customer_code = str(row[col_code])
+                    customer_code = str(int(row[col_code]))
                     customer_name = str(row[col_name])
-                    product_code = str(row[col_code_p])
+                    product_code = str(int(row[col_code_p]))
                     product_name = str(row[col_name_p])
                     count = str(row[col_count])
-                    price = str(row[col_price])
-                    price_total = str(row[col_price_total])
+                    price = str(int(row[col_price]))
+                    price_total = str(int(row[col_price_total]))
                     try:
                         customer = CustomerModel.objects.get(code=customer_code)
                     except CustomerModel.DoesNotExist:

@@ -11,10 +11,17 @@
 
             <div class="container-xxl flex-grow-1 container-p-y">
               <div class="row g-4 mb-4">
-                <div class="col-sm-6 col-xl-12">
+                <div class="col-sm-6 col-xl-6">
                   <div class="card">
                     <div class="card-body">
-                      <canvas id="myChart" width="400" height="200"></canvas>
+                      <canvas id="pieChart" width="100" height="200"></canvas>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-xl-6">
+                  <div class="card">
+                    <div class="card-body">
+                      <canvas id="pieChart2" width="100" height="200"></canvas>
                     </div>
                   </div>
                 </div>
@@ -113,10 +120,96 @@
 {% endblock content %}
         {% block script %}
 <script>
-const ctx = document.getElementById('myChart');
+  const pieCtx = document.getElementById('pieChart');
+const labels = [
+    {% for item in top_count %}
+        "{{ item.product__name|escapejs }}",
+    {% endfor %}
+];
+const dataValues = [
+    {% for item in top_count %}
+        {{ item.total_count }},
+    {% endfor %}
+];
+const dynamicColors = dataValues.map(() => {
+    const r = Math.floor(Math.random() * 255);
+    const g = Math.floor(Math.random() * 255);
+    const b = Math.floor(Math.random() * 255);
+    return `rgba(${r}, ${g}, ${b}, 0.7)`;
+});
+new Chart(pieCtx, {
+    type: 'pie',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'سهم فروش',
+            data: dataValues,
+            backgroundColor: dynamicColors
+        }]
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+                text: 'کالاهای پر فروش',
+                font: { size: 20 }
+            },
+            legend: {
+                position: 'right',
+                labels: {
+                    font: { size: 14 }
+                }
+            }
+        }
+    }
+});
+const pieCtx2 = document.getElementById('pieChart2');
+const labels2 = [
+    {% for item in top_price %}
+        "{{ item.customer__name|escapejs }}",
+    {% endfor %}
+];
+const dataValues2 = [
+    {% for item in top_price %}
+        {{ item.total_price }},
+    {% endfor %}
+];
+const dynamicColors2 = dataValues.map(() => {
+    const r = Math.floor(Math.random() * 255);
+    const g = Math.floor(Math.random() * 255);
+    const b = Math.floor(Math.random() * 255);
+    return `rgba(${r}, ${g}, ${b}, 0.7)`;
+});
+new Chart(pieCtx2, {
+    type: 'pie',
+    data: {
+        labels: labels2,
+        datasets: [{
+            label: 'سهم فروش',
+            data: dataValues2,
+            backgroundColor: dynamicColors2
+        }]
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+                text: 'بیشترین مبلغ فروش',
+                font: { size: 20 }
+            },
+            legend: {
+                position: 'right',
+                labels: {
+                    font: { size: 14 }
+                }
+            }
+        }
+    }
+});
+{% comment %} const ctx = document.getElementById('piChart');
 
 new Chart(ctx, {
-    type: 'bar',
+    type: 'pie',
     data: {
         labels: [{% for item in xvalue %}'{{ item|safe }}',{% endfor %}],
         datasets: [{
@@ -156,6 +249,6 @@ new Chart(ctx, {
             }
         }
     }
-});
+}); {% endcomment %}
 </script>
         {% endblock script %}
