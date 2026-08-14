@@ -12,27 +12,27 @@
 
             <div class="container-xxl flex-grow-1 container-p-y">
               <div class="row g-4 mb-4">
-                <div class="col-sm-6 col-xl-3">
-                  <div class="card">
+                <div class="col-sm-12 col-xl-6">
+                  <div class="card bg-primary text-white">
                     <div class="card-body text-center">
                       <div class="avatar avatar-md mx-auto mb-3">
                         <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-group fs-3"></i></span>
                       </div>
                       <span class="d-block mb-1 text-nowrap">تعداد کل مشتریان</span>
-                      <h2 class="mb-1">{{ count }}</h2>
-                      <small class="text-primary">(عدد)</small>
+                      <h2 class="mb-0 text-black">{{ count }}</h2>
+                      <small>(عدد)</small>
                     </div>
                   </div>
                 </div>
-                <div class="col-sm-6 col-xl-3">
-                  <div class="card">
+                <div class="col-sm-12 col-xl-6">
+                  <div class="card bg-success text-white">
                     <div class="card-body text-center">
                       <div class="avatar avatar-md mx-auto mb-3">
                         <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-dollar fs-4"></i></span>
                       </div>
                       <span class="d-block mb-1 text-nowrap">مبلغ کل خرید مشتریان</span>
-                      <h2 class="mb-1">{{ customer_total_price|intcomma:False }}</h2>
-                      <small class="text-success">(ریال)</small>
+                      <h2 class="mb-0 text-black">{{ customer_total_price|intcomma:False }}</h2>
+                      <small>(ریال)</small>
                     </div>
                   </div>
                 </div>

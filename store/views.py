@@ -136,7 +136,7 @@ class CustomerDetailsView(PermissionRequiredMixin, views.View):
             .annotate(count_int=Cast('count', models.IntegerField()))
             .values('product__code', 'product__name')
             .annotate(total_count=Sum('count_int'))
-            .order_by('-total_count')[:10]
+            .order_by('-total_count')[:5]
         )
         total_count = (
             sales
@@ -148,7 +148,7 @@ class CustomerDetailsView(PermissionRequiredMixin, views.View):
             .annotate(price_int=Cast('price_total', models.IntegerField()))
             .values('product__code', 'product__name')
             .annotate(total_price=Sum('price_int'))
-            .order_by('-total_price')[:10]
+            .order_by('-total_price')[:5]
         )
         total_price = (
             sales
@@ -177,13 +177,29 @@ class DateListView(PermissionRequiredMixin, views.View):
     permission_required = []
 
     def get(self, request):
-        date = DateModel.objects.all().order_by("day")
-        form = DurationForm()
+        form = DateSelectForm()
         context = {
-            "date":date,
             "form":form,
         }
         return render(request, "store/date-list.html", context)
+
+    def post(self, request):
+        form = DateSelectForm(request.POST)
+        context = {
+            "form":form,
+        }
+        if form.is_valid():
+            day = form.cleaned_data.get("day")
+            month = form.cleaned_data.get("month")
+            year = form.cleaned_data.get("year")
+            try:
+                date = DateModel.objects.get(Q(year=year) & Q(month=month) & Q(day=day))
+            except DateModel.DoesNotExist:
+                messages.error(request, f"برای تاریخ {year}/{month}/{day} هیچ اطلاعاتی ثبت نشده است!")
+                return render(request, "store/date-list.html", context)
+            return redirect("store:sale-details", did=date.pk)
+        return render(request, "store/date-list.html", context)
+            
 
 
 class DateDurationView(PermissionRequiredMixin, views.View):
@@ -207,14 +223,14 @@ class DateDurationView(PermissionRequiredMixin, views.View):
             .annotate(count_int=Cast('count', models.IntegerField()))
             .values('product__code', 'product__name')
             .annotate(total_count=Sum('count_int'))
-            .order_by('-total_count')[:10]
+            .order_by('-total_count')[:5]
         )
         top_price = (
             sales
             .annotate(price_int=Cast('price_total', models.IntegerField()))
             .values('customer__code', 'customer__name')
             .annotate(total_price=Sum('price_int'))
-            .order_by('-total_price')[:10]
+            .order_by('-total_price')[:5]
         )
         sales = sales.order_by("date")
         paginator = Paginator(sales, 24)
@@ -297,42 +313,42 @@ class ProductDetailsView(PermissionRequiredMixin, views.View):
             .annotate(count_int=Cast('count', models.IntegerField()))
             .values('date__year', 'date__month', 'date__day')
             .annotate(total_count=Sum('count_int'))
-            .order_by('-total_count')[:10]
+            .order_by('-total_count')[:5]
         )
         top_price_3 = (
             sales_3
             .annotate(price_int=Cast('price_total', models.IntegerField()))
             .values('customer__code', 'customer__name')
             .annotate(total_price=Sum('price_int'))
-            .order_by('-total_price')[:10]
+            .order_by('-total_price')[:5]
         )
         top_count_7 = (
             sales_7
             .annotate(count_int=Cast('count', models.IntegerField()))
             .values('date__year', 'date__month', 'date__day')
             .annotate(total_count=Sum('count_int'))
-            .order_by('-total_count')[:10]
+            .order_by('-total_count')[:5]
         )
         top_price_7 = (
             sales_7
             .annotate(price_int=Cast('price_total', models.IntegerField()))
             .values('customer__code', 'customer__name')
             .annotate(total_price=Sum('price_int'))
-            .order_by('-total_price')[:10]
+            .order_by('-total_price')[:5]
         )
         top_count_30 = (
             sales_30
             .annotate(count_int=Cast('count', models.IntegerField()))
             .values('date__year', 'date__month', 'date__day')
             .annotate(total_count=Sum('count_int'))
-            .order_by('-total_count')[:10]
+            .order_by('-total_count')[:5]
         )
         top_price_30 = (
             sales_30
             .annotate(price_int=Cast('price_total', models.IntegerField()))
             .values('customer__code', 'customer__name')
             .annotate(total_price=Sum('price_int'))
-            .order_by('-total_price')[:10]
+            .order_by('-total_price')[:5]
         )
         context = {
             "product":product,
@@ -343,7 +359,6 @@ class ProductDetailsView(PermissionRequiredMixin, views.View):
             "top_count_30":top_count_30,
             "top_price_30":top_price_30,
         }
-        print(top_count_30, top_price_30, sales_30)
         return render(request, "store/product-details.html", context)
 
 

@@ -9,15 +9,16 @@
             <!-- Content -->
 
             <div class="container-xxl flex-grow-1 container-p-y">
+              <h3 class="py-2 breadcrumb-wrapper mb-3"> فروش {{ ddn }} روز آخر</h3>
                 <div class="row">
-                    <div class="col-md-12 col-lg-8 col-xl-4 mb-4 order-0">
+                    <div class="col-md-12 col-lg-6 col-xl-6 mb-4 order-0">
                       <div class="card">
                         <div class="card-body">
-                          <canvas id="pieChart" width="100" height="100"></canvas>                     
+                          <canvas id="pieChart" width="50" height="50"></canvas>                     
                         </div>
                       </div>
                     </div>
-                    <div class="col-md-12 col-lg-8 col-xl-4 mb-4 order-0">
+                    <div class="col-md-12 col-lg-6 col-xl-6 mb-4 order-0">
                       <div class="card">
                         <div class="card-body">
                           <canvas id="pieChart2" width="100" height="100"></canvas>                     
@@ -45,7 +46,7 @@
                                   <div class="me-2">
                                     <p class="mb-0">{{ sale.product.name }}</p>
                                   </div>
-                                  <div class="item-progress"></div>
+                                  <div class="item-progress">{{ sale.product.code }}</div>
                                 </div>
                               </li>
                               <li class="d-flex align-items-center mb-3">
@@ -160,7 +161,7 @@ const dynamicColors = dataValues.map(() => {
     return `rgba(${r}, ${g}, ${b}, 0.7)`;
 });
 new Chart(pieCtx, {
-    type: 'pie',
+    type: 'doughnut',
     data: {
         labels: labels,
         datasets: [{
@@ -203,7 +204,7 @@ const dynamicColors2 = dataValues.map(() => {
     return `rgba(${r}, ${g}, ${b}, 0.7)`;
 });
 new Chart(pieCtx2, {
-    type: 'pie',
+    type: 'doughnut',
     data: {
         labels: labels2,
         datasets: [{

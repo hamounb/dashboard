@@ -1,5 +1,5 @@
 from django import forms
-from .models import *
+from .models import CategoryFileModel, DateModel
 from persiantools import jdatetime
 
 
@@ -8,15 +8,15 @@ class FileUploadForm(forms.Form):
         "1405":"1405"
     }
     MONTH_ITEMS = {
-        "o1":"فروردین",
-        "o2":"اردیبهشت",
-        "o3":"خرداد",
-        "o4":"تیر",
-        "o5":"مرداد",
-        "o6":"شهریور",
-        "o7":"مهر",
-        "o8":"آبان",
-        "o9":"آذر",
+        "01":"فروردین",
+        "02":"اردیبهشت",
+        "03":"خرداد",
+        "04":"تیر",
+        "05":"مرداد",
+        "06":"شهریور",
+        "07":"مهر",
+        "08":"آبان",
+        "09":"آذر",
         "10":"دی",
         "11":"بهمن",
         "12":"اسفند",
@@ -61,34 +61,34 @@ class FileUploadForm(forms.Form):
     file = forms.FileField(label="فایل", widget=forms.FileInput(attrs={"class":"form-control"}))
 
 
-class DurationForm(forms.Form):
+class DateSelectForm(forms.Form):
     YEAR_ITEMS = {
         "1405":"1405"
     }
     MONTH_ITEMS = {
-        "1":"فروردین",
-        "2":"اردیبهشت",
-        "3":"خرداد",
-        "4":"تیر",
-        "5":"مرداد",
-        "6":"شهریور",
-        "7":"مهر",
-        "8":"آبان",
-        "9":"آذر",
+        "01":"فروردین",
+        "02":"اردیبهشت",
+        "03":"خرداد",
+        "04":"تیر",
+        "05":"مرداد",
+        "06":"شهریور",
+        "07":"مهر",
+        "08":"آبان",
+        "09":"آذر",
         "10":"دی",
         "11":"بهمن",
         "12":"اسفند",
     }
     DAY_ITEMS = {
-        "1":"1",
-        "2":"2",
-        "3":"3",
-        "4":"4",
-        "5":"5",
-        "6":"6",
-        "7":"7",
-        "8":"8",
-        "9":"9",
+        "01":"01",
+        "02":"02",
+        "03":"03",
+        "04":"04",
+        "05":"05",
+        "06":"06",
+        "07":"07",
+        "08":"08",
+        "09":"09",
         "10":"10",
         "11":"11",
         "12":"12",
@@ -112,9 +112,6 @@ class DurationForm(forms.Form):
         "30":"30",
         "31":"31",
     }
-    start_day = forms.CharField(label="روز", widget=forms.Select(attrs={"class":"form-select"}, choices=DAY_ITEMS))
-    start_month = forms.CharField(label="ماه", widget=forms.Select(attrs={"class":"form-select"}, choices=MONTH_ITEMS))
-    start_year = forms.CharField(label="سال", widget=forms.Select(attrs={"class":"form-select"}, choices=YEAR_ITEMS))
-    end_day = forms.CharField(label="روز", widget=forms.Select(attrs={"class":"form-select"}, choices=DAY_ITEMS))
-    end_month = forms.CharField(label="ماه", widget=forms.Select(attrs={"class":"form-select"}, choices=MONTH_ITEMS))
-    end_year = forms.CharField(label="سال", widget=forms.Select(attrs={"class":"form-select"}, choices=YEAR_ITEMS))
+    day = forms.CharField(label="روز", widget=forms.Select(attrs={"class":"form-select", "placeholder":"selected"}, choices=DAY_ITEMS))
+    month = forms.CharField(label="ماه", widget=forms.Select(attrs={"class":"form-select"}, choices=MONTH_ITEMS))
+    year = forms.CharField(label="سال", widget=forms.Select(attrs={"class":"form-select"}, choices=YEAR_ITEMS))

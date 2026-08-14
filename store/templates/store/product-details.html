@@ -9,21 +9,7 @@
             <!-- Content -->
 
             <div class="container-xxl flex-grow-1 container-p-y">
-                <div class="row g-4">
-                    <div class="col-md-12 col-xl-12">
-                        <div class="card mb-3">
-                          <div class="card-body">
-                            <div class="card-title header-elements">
-                              <h5 class="m-0 me-2">{{ product.name }}</h5>
-                              <div class="card-title-elements ms-auto">
-                                <span class="badge bg-label-primary rounded-pill"></span>
-                              </div>
-                            </div>
-                            <p class="card-text">{{ product.code }}</p>
-                          </div>
-                        </div>
-                    </div>
-                </div>
+                <h3 class="py-2 breadcrumb-wrapper mb-3">{{ product.name }}</h3>
             {% if top_count_3 and top_price_3 %}
                 <div class="row g-4 mb-3">
                     <div class="col-md-12 col-lg-6 col-xl-4 order-0">

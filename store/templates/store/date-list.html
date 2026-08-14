@@ -35,245 +35,58 @@
                   </div>
                 </div>
               </div>
-
-              <!-- Collapse -->
-               <div class="divider text-start">
+              <div class="divider text-start">
                   <div class="divider-text"></div>
                 </div>
               <div class="row">
-                <div class="col-12">
+                <div class="col-xl">
                   <div class="card mb-4">
-                    <h5 class="card-header heading-color">سال 1405</h5>
+                    <div class="card-header align-items-center">
+                      <h5 class="mb-0">تاریخ مورد نظر خود را انتخاب کنید</h5>
+                      {% if messages %}
+                      {% for message in messages %}
+                      <div class="alert alert-solid-danger alert-dismissible d-flex align-items-center mt-3" role="alert">
+                        <i class="bx bx-xs bx-store me-2"></i>
+                        <span>{{ message }}</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                      {% endfor %}
+                      {% endif %}
+                    </div>
                     <div class="card-body">
-                      <p class="card-text">
-                        ماه مورد نظر را انتخاب کنید
-                      </p>
-                      <p class="demo-inline-spacing">
-                        <a class="btn btn-primary me-1" data-bs-toggle="collapse" href="#collapseExample1" role="button" aria-expanded="false" aria-controls="collapseExample">
-                            فروردین
-                        </a>
-                        <a class="btn btn-primary me-1" data-bs-toggle="collapse" href="#collapseExample2" role="button" aria-expanded="false" aria-controls="collapseExample">
-                            اردیبهشت
-                        </a>
-                        <a class="btn btn-primary me-1" data-bs-toggle="collapse" href="#collapseExample3" role="button" aria-expanded="false" aria-controls="collapseExample">
-                            خرداد
-                        </a>
-                        <a class="btn btn-primary me-1" data-bs-toggle="collapse" href="#collapseExample4" role="button" aria-expanded="false" aria-controls="collapseExample">
-                            تیر
-                        </a>
-                        <a class="btn btn-primary me-1" data-bs-toggle="collapse" href="#collapseExample5" role="button" aria-expanded="false" aria-controls="collapseExample">
-                            مرداد
-                        </a>
-                        <a class="btn btn-primary me-1" data-bs-toggle="collapse" href="#collapseExample6" role="button" aria-expanded="false" aria-controls="collapseExample">
-                            شهریور
-                        </a>
-                        <a class="btn btn-primary me-1" data-bs-toggle="collapse" href="#collapseExample7" role="button" aria-expanded="false" aria-controls="collapseExample">
-                            مهر
-                        </a>
-                        <a class="btn btn-primary me-1" data-bs-toggle="collapse" href="#collapseExample8" role="button" aria-expanded="false" aria-controls="collapseExample">
-                            آبان
-                        </a>
-                        <a class="btn btn-primary me-1" data-bs-toggle="collapse" href="#collapseExample9" role="button" aria-expanded="false" aria-controls="collapseExample">
-                            آذر
-                        </a>
-                        <a class="btn btn-primary me-1" data-bs-toggle="collapse" href="#collapseExample10" role="button" aria-expanded="false" aria-controls="collapseExample">
-                            دی
-                        </a>
-                        <a class="btn btn-primary me-1" data-bs-toggle="collapse" href="#collapseExample11" role="button" aria-expanded="false" aria-controls="collapseExample">
-                            بهمن
-                        </a>
-                        <a class="btn btn-primary me-1" data-bs-toggle="collapse" href="#collapseExample12" role="button" aria-expanded="false" aria-controls="collapseExample">
-                            اسفند
-                        </a>
-                      </p>
-                      <div class="collapse" id="collapseExample1">
-                        <div class="d-grid d-sm-flex p-3 border">
-                          <span class="lh-2">
-                            <p>فروردین: 
-                                {% for i in date %}
-                                {% if i.month == "01" %}
-                                <a class="btn btn-outline-primary" href="{% url 'store:sale' did=i.pk %}">{{ i.day }}</a>
-                                {% endif %}
-                                {% endfor %}
-                            </p>
-                          </span>
+                      <form method="post">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                          <div class="col-md-4">
+                            <label class="form-label">روز</label>
+                            {{ form.day }}
+                          </div>
+                          <div class="col-md-4">
+                            <label class="form-label">ماه</label>
+                            <div class="input-group input-group-merge">
+                              {{ form.month }}
+                            </div>
+                          </div>
+                          <div class="col-md-4">
+                            <label class="form-label">سال</label>
+                            <div class="input-group input-group-merge">
+                              {{ form.year }}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      <div class="collapse" id="collapseExample2">
-                        <div class="d-grid d-sm-flex p-3 border">
-                          <span class="lh-2">
-                            <p>اردیبهشت:
-                                {% for i in date %}
-                                {% if i.month == "02" %}
-                                <a class="btn btn-outline-primary" href="{% url 'store:sale' did=i.pk %}">{{ i.day }}</a>
-                                {% endif %}
-                                {% endfor %}
-                            </p>
-                          </span>
+                        <div class="pt-4">
+                          <button type="submit" class="btn btn-primary me-sm-3 me-1">ارسال</button>
                         </div>
-                      </div>
-                      <div class="collapse" id="collapseExample3">
-                        <div class="d-grid d-sm-flex p-3 border">
-                          <span class="lh-2">
-                            <p>خرداد:
-                                {% for i in date %}
-                                {% if i.month == "03" %}
-                                <a class="btn btn-outline-primary" href="{% url 'store:sale' did=i.pk %}">{{ i.day }}</a>
-                                {% endif %}
-                                {% endfor %}
-                            </p>
-                          </span>
-                        </div>
-                      </div>
-                      <div class="collapse" id="collapseExample4">
-                        <div class="d-grid d-sm-flex p-3 border">
-                          <span class="lh-2">
-                            <p>تیر:
-                                {% for i in date %}
-                                {% if i.month == "04" %}
-                                <a class="btn btn-outline-primary" href="{% url 'store:sale' did=i.pk %}">{{ i.day }}</a>
-                                {% endif %}
-                                {% endfor %}
-                            </p>
-                          </span>
-                        </div>
-                      </div>
-                      <div class="collapse" id="collapseExample5">
-                        <div class="d-grid d-sm-flex p-3 border">
-                          <span class="lh-2">
-                            <p>مرداد:
-                                {% for i in date %}
-                                {% if i.month == "05" %}
-                                <a class="btn btn-outline-primary" href="{% url 'store:sale' did=i.pk %}">{{ i.day }}</a>
-                                {% endif %}
-                                {% endfor %}
-                            </p>
-                          </span>
-                        </div>
-                      </div>
-                      <div class="collapse" id="collapseExample6">
-                        <div class="d-grid d-sm-flex p-3 border">
-                          <span class="lh-2">
-                            <p>شهریور:
-                                {% for i in date %}
-                                {% if i.month == "06" %}
-                                <a class="btn btn-outline-primary" href="{% url 'store:sale' did=i.pk %}">{{ i.day }}</a>
-                                {% endif %}
-                                {% endfor %}
-                            </p>
-                          </span>
-                        </div>
-                      </div>
-                      <div class="collapse" id="collapseExample7">
-                        <div class="d-grid d-sm-flex p-3 border">
-                          <span class="lh-2">
-                            <p>مهر:
-                                {% for i in date %}
-                                {% if i.month == "07" %}
-                                <a class="btn btn-outline-primary" href="{% url 'store:sale' did=i.pk %}">{{ i.day }}</a>
-                                {% endif %}
-                                {% endfor %}
-                            </p>
-                          </span>
-                        </div>
-                      </div>
-                      <div class="collapse" id="collapseExample8">
-                        <div class="d-grid d-sm-flex p-3 border">
-                          <span class="lh-2">
-                            <p>آبان:
-                                {% for i in date %}
-                                {% if i.month == "08" %}
-                                <a class="btn btn-outline-primary" href="{% url 'store:sale' did=i.pk %}">{{ i.day }}</a>
-                                {% endif %}
-                                {% endfor %}
-                            </p>
-                          </span>
-                        </div>
-                      </div>
-                      <div class="collapse" id="collapseExample9">
-                        <div class="d-grid d-sm-flex p-3 border">
-                          <span class="lh-2">
-                            <p>آذر:
-                                {% for i in date %}
-                                {% if i.month == "09" %}
-                                <a class="btn btn-outline-primary" href="{% url 'store:sale' did=i.pk %}">{{ i.day }}</a>
-                                {% endif %}
-                                {% endfor %}
-                            </p>
-                          </span>
-                        </div>
-                      </div>
-                      <div class="collapse" id="collapseExample10">
-                        <div class="d-grid d-sm-flex p-3 border">
-                          <span class="lh-2">
-                            <p>دی:
-                                {% for i in date %}
-                                {% if i.month == "10" %}
-                                <a class="btn btn-outline-primary" href="{% url 'store:sale' did=i.pk %}">{{ i.day }}</a>
-                                {% endif %}
-                                {% endfor %}
-                            </p>
-                          </span>
-                        </div>
-                      </div>
-                      <div class="collapse" id="collapseExample11">
-                        <div class="d-grid d-sm-flex p-3 border">
-                          <span class="lh-2">
-                            <p>بهمن:
-                                {% for i in date %}
-                                {% if i.month == "11" %}
-                                <a class="btn btn-outline-primary" href="{% url 'store:sale' did=i.pk %}">{{ i.day }}</a>
-                                {% endif %}
-                                {% endfor %}
-                            </p>
-                          </span>
-                        </div>
-                      </div>
-                      <div class="collapse" id="collapseExample12">
-                        <div class="d-grid d-sm-flex p-3 border">
-                          <span class="lh-2">
-                            <p>اسفند:
-                                {% for i in date %}
-                                {% if i.month == "12" %}
-                                <a class="btn btn-outline-primary" href="{% url 'store:sale' did=i.pk %}">{{ i.day }}</a>
-                                {% endif %}
-                                {% endfor %}
-                            </p>
-                          </span>
-                        </div>
-                      </div>
+                      </form>
                     </div>
                   </div>
                 </div>
               </div>
+
             </div>
         </div>
             <!-- / Content -->
 {% endblock content %}
-
-                                <div class="row">
-                                  <div class="mb-3 col-lg-6 col-xl-4 col-12 mb-0">
-                                    <label class="form-label" for="form-repeater-1-3">جنسیت</label>
-                                    <select id="form-repeater-1-3" class="form-select">
-                                      <option value="Male">مرد</option>
-                                      <option value="Female">زن</option>
-                                    </select>
-                                  </div>
-                                  <div class="mb-3 col-lg-6 col-xl-4 col-12 mb-0">
-                                    <label class="form-label" for="form-repeater-1-3">جنسیت</label>
-                                    <select id="form-repeater-1-3" class="form-select">
-                                      <option value="Male">مرد</option>
-                                      <option value="Female">زن</option>
-                                    </select>
-                                  </div>
-                                  <div class="mb-3 col-lg-6 col-xl-4 col-12 mb-0">
-                                    <label class="form-label" for="form-repeater-1-3">جنسیت</label>
-                                    <select id="form-repeater-1-3" class="form-select">
-                                      <option value="Male">مرد</option>
-                                      <option value="Female">زن</option>
-                                    </select>
-                                  </div>
-                                </div>
 
 
 
