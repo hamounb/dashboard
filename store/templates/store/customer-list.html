@@ -37,17 +37,18 @@
                   </div>
                 </div>
               </div>
-
               <div class="row">
-                  {% for customer in page_obj %}
+                  {% for item in page_obj %}
+                  {% for customer in customers %}
+                  {% if item.code == customer.code %}
                   <div class="col-md-6 col-lg-4 col-xl-3 mb-2 order-0">
                       <div class="card h-100">
                         <div class="card-header d-flex align-items-center justify-content-between">
-                          <h5 class="card-title mb-0">
+                          <h6 class="card-title mb-0">
                             <a href="{% url 'store:customer-details' cid=customer.pk %}">
-                              {{ forloop.counter|add:offset }} - {{ customer.name }}
+                              {{ forloop.parentloop.counter|add:offset }} - {{ customer.name }}
                             </a>
-                            </h5>
+                            </h6>
                           <div class="dropdown primary-font">
                               {{ customer.code }}
                           </div>
@@ -63,11 +64,7 @@
                                   <p class="mb-0">مقدار</p>
                                 </div>
                                 <div class="item-progress">
-                                  {% for key, value in sales.items %}
-                                    {% if customer.code == key %}
-                                    {{ value.count }}
-                                    {% endif %}
-                                  {% endfor %}
+                                  {{ item.count }}
                                 </div>
                               </div>
                             </li>
@@ -80,11 +77,7 @@
                                   <p class="mb-0">مبلغ کل</p>
                                 </div>
                                 <div class="item-progress">
-                                  {% for key, value in sales.items %}
-                                    {% if customer.code == key %}
-                                    {{ value.price|intcomma:False }}
-                                    {% endif %}
-                                  {% endfor %}
+                                  {{ item.price|intcomma:False }}
                                 </div>
                               </div>
                             </li>
@@ -92,8 +85,10 @@
                         </div>
                       </div>
                   </div>
+                  {% endif %}
                   {% endfor %}
-              </div>
+                  {% endfor %}
+              </div> 
               {% if page_obj.has_next or page_obj.has_previous %}
                 <nav aria-label="Page navigation" class="mt-2">
                     <ul class="pagination justify-content-center">

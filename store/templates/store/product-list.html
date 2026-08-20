@@ -9,31 +9,119 @@
             <!-- Content -->
 
         <div class="container-xxl flex-grow-1 container-p-y">
-            <div class="card">
-                <h5 class="card-header heading-color">لیست محصولات<input class="form-control" id="myInput" type="text" placeholder="جستجو..."></h5>
-                <div class="table-responsive text-nowrap" style="height:800px;overflow:auto;">
-                  <table id="datatable" class="table table-striped">
-                    <thead>
-                      <tr>
-                        <th>ردیف</th>
-                        <th>کد محصول</th>
-                        <th>نام محصول</th>
-                        <th>مشاهده جزئیات فروش</th>
-                      </tr>
-                    </thead>
-                    <tbody class="table-border-bottom-0">
-                    {% for product in product %}
-                      <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ product.code }}</td>
-                        <td>{{ product.name }}</td>
-                        <td><a class="btn btn-primary" href="{% url 'store:product-details' pid=product.pk %}">بیشتر</a></td>
-                      </tr>
-                    {% endfor %}
-                    </tbody>
-                  </table>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6 col-lg-4 col-xl-12 mb-3 order-0">
+                  <div class="card">
+                    <div class="card-header align-items-center">
+                      <h5 class="mb-0">نام یا کد کالا مورد نظر را وارد کنید</h5>
+                      
+                    </div>
+                    <div class="card-body">
+                      <form method="get">
+                        {% csrf_token %}
+                      <div class="row">
+                        <div class="col-md-12 col-lg-9 col-xl-9 mb-3 order-0">
+                          {{ form.text }}
+                        </div>
+                        <div class="col-md-12 col-lg-3 col-xl-3 mb-3 order-0">
+                          <button class="btn btn-primary" type="submit">جستجو</button>
+                        </div>
+                      </div>
+                    </form>
+                    </div>
                 </div>
+              </div>
             </div>
+            <div class="row">
+              {% for sale in page_obj %}
+              <div class="col-md-6 col-lg-4 col-xl-3 mb-4 order-0">
+                  <div class="card h-100">
+                    <div class="card-body pb-3">
+                      <h5 class="card-title mb-1 text-danger">نام کالا</h5>
+                      <ul class="p-0 m-0">
+                        <li class="d-flex align-items-center mb-2">
+                          <div class="avatar avatar-sm flex-shrink-0 me-3">
+                            <span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-cube"></i></span>
+                          </div>
+                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                            <div class="me-2">
+                              <p class="mb-0 text-info">{{ sale.name }}</p>
+                            </div>
+                            <div class="item-progress">{{ sale.product.code }}</div>
+                          </div>
+                        </li>
+                      </ul>
+                      <h5 class="card-title mb-1 text-warning">کد کالا</h5>
+                      <ul class="p-0 m-0">
+                        <li class="d-flex align-items-center mb-3">
+                          <div class="avatar avatar-sm flex-shrink-0 me-3">
+                            <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-pie-chart-alt"></i></span>
+                          </div>
+                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                            <div class="me-2">
+                              <p class="mb-0 text-primary">{{ sale.code }}</p>
+                            </div>
+                            <div class="item-progress"></div>
+                          </div>
+                        </li>
+                      </ul>
+                      <div class="d-grid gap-2 col-xl-12 mx-auto">
+                      <a class="btn btn-success" href="{% url 'store:product-details' pid=sale.pk %}" >جزئیات بیشتر</a>
+                      </div>
+                    </div>
+                  </div>
+              </div>
+              {% endfor %}
+            </div>
+            {% if page_obj.has_next or page_obj.has_previous %}
+                <nav aria-label="Page navigation" class="mt-2">
+                    <ul class="pagination justify-content-center">
+                      {% if page_obj.has_previous %}
+										  {% if page_obj.number == 2 %}
+                      <li class="page-item first">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page=1"><i class="tf-icon bx bx-chevrons-left"></i></a>
+                      </li>
+                      <li class="page-item">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page=1">1</a>
+                      </li>
+                      {% else %}
+                      <li class="page-item first">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page=1"><i class="tf-icon bx bx-chevrons-left"></i></a>
+                      </li>
+                      <li class="page-item prev">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}"><i class="tf-icon bx bx-chevron-left"></i></a>
+                      </li>
+                      <li class="page-item">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a>
+                      {% endif %}
+                      {% endif %}
+                      <li class="page-item active">
+                        <a class="page-link" href="javascript:void(0);">{{ page_obj.number }}</a>
+                      </li>
+                      {% if page_obj.has_next %}
+										  {% if page_obj.next_page_number == page_obj.paginator.num_pages %}
+                      <li class="page-item">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+                      </li>
+                      <li class="page-item last">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}"><i class="tf-icon bx bx-chevrons-right"></i></a>
+                      </li>
+                      {% else %}
+                      <li class="page-item">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+                      </li>
+                      <li class="page-item next">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}"><i class="tf-icon bx bx-chevron-right"></i></a>
+                      </li>
+                      <li class="page-item last">
+                        <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.paginator.num_pages }}"><i class="tf-icon bx bx-chevrons-right"></i></a>
+                      </li>
+                      {% endif %}
+                      {% endif %}
+                    </ul>
+                </nav>
+                  {% endif %}
         </div>
     </div>
 {% endblock content %}

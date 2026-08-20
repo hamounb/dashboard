@@ -20,7 +20,8 @@ class DateAdmin(admin.ModelAdmin):
 @admin.register(CustomerModel)
 class CustomerAdmin(admin.ModelAdmin):
     readonly_fields = ("user_created", "user_modified", "created_date", "modified_date")
-    search_fields = ("code", "name")
+    search_fields = ("pk", "code", "name")
+    list_display = ("pk", "code", "name")
     
     def save_model(self, request, obj, form, change):
         if change:
@@ -48,7 +49,7 @@ class ProductAdmin(admin.ModelAdmin):
 @admin.register(SaleModel)
 class SaleAdmin(admin.ModelAdmin):
     readonly_fields = ("user_created", "user_modified", "created_date", "modified_date")
-    search_fields = ("date", "customer", "product", "price_total")
+    search_fields = ("date__year", "date__month", "date__day", "customer__code", "product__code", "price_total")
     list_display = ("pk", "date", "customer", "product")
     
     def save_model(self, request, obj, form, change):

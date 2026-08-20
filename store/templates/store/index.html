@@ -40,10 +40,10 @@
                           </div>
                           <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
                             <div class="me-2">
-                              <p class="mb-0">مقدار کل فروش</p>
-                              <small class="text-muted"></small>
+                              <p class="mb-0">تعداد کل فروش</p>
+                              <small class="text-muted">(عدد)</small>
                             </div>
-                            <div class="item-progress">{{ total_count }}</div>
+                            <div class="item-progress">{{ customer_count }}</div>
                           </div>
                         </li>
                         <li class="d-flex align-items-center mb-3">
@@ -53,7 +53,7 @@
                           <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
                             <div class="me-2">
                               <p class="mb-0">مبلغ کل فروش</p>
-                              <small class="text-muted"></small>
+                              <small class="text-muted">(ریال)</small>
                             </div>
                             <div class="item-progress">{{ total_price|intcomma:False }}</div>
                           </div>
@@ -74,6 +74,99 @@
                     </div>
                   </div>
                 </div>
+                <div class="col-md-6 col-lg-6 col-xl-4 mb-4 order-0">
+                  <div class="card h-100">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                      <h5 class="card-title mb-0">آمار عددی فروش ۶ روز</h5>
+                    </div>
+                    <div class="card-body pb-3">
+                      <ul class="p-0 m-0">
+                        <li class="d-flex align-items-center mb-3">
+                          <div class="avatar avatar-sm flex-shrink-0 me-3">
+                            <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-cube"></i></span>
+                          </div>
+                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                            <div class="me-2">
+                              <p class="mb-0">بیشترین فروش</p>
+                              <small class="text-muted">
+                                {% for item in top_customers %}
+                                {% if forloop.counter == 1%}
+                                {{ item.customer__name }}
+                                {% endif %}
+                                {% endfor %}
+                              </small>
+                            </div>
+                            <div class="item-progress">
+                                {% for item in top_customers %}
+                                {% if forloop.counter == 1 %}
+                                    {{ item.total_price|intcomma:False }}
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                          </div>
+                        </li>
+                        <li class="d-flex align-items-center mb-3">
+                          <div class="avatar avatar-sm flex-shrink-0 me-3">
+                            <span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-pie-chart-alt"></i></span>
+                          </div>
+                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                            <div class="me-2">
+                              <p class="mb-0">تعداد کل فروش</p>
+                              <small class="text-muted">(عدد)</small>
+                            </div>
+                            <div class="item-progress">{{ customer_count_6 }}</div>
+                          </div>
+                        </li>
+                        <li class="d-flex align-items-center mb-3">
+                          <div class="avatar avatar-sm flex-shrink-0 me-3">
+                            <span class="avatar-initial rounded-circle bg-label-danger"><i class="bx bx-credit-card"></i></span>
+                          </div>
+                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                            <div class="me-2">
+                              <p class="mb-0">مبلغ کل فروش</p>
+                              <small class="text-muted">(ریال)</small>
+                            </div>
+                            <div class="item-progress">{{ total_price_6|intcomma:False }}</div>
+                          </div>
+                        </li>
+                        <li class="d-flex align-items-center">
+                          <div class="avatar avatar-sm flex-shrink-0 me-3">
+                            <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-dollar"></i></span>
+                          </div>
+                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                            <div class="me-2">
+                              <p class="mb-0">محصول پر فروش</p>
+                              <small class="text-muted">
+                                {% for item in top_products %}
+                                {% if forloop.counter == 1%}
+                                    {{ item.product__name }}
+                                {% endif %}
+                                {% endfor %}
+                              </small>
+                            </div>
+                            <div class="item-progress">
+                                {% for item in top_products %}
+                                {% if forloop.counter == 1%}
+                                    {{ item.total_count }}
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-12 col-lg-8 col-xl-4 mb-4 order-0">
+                  <div class="card">
+                    <div class="card-body">
+                      <canvas id="barChart" width="100" height="100"></canvas>                     
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
 
                 <div class="col-md-12 col-lg-8 col-xl-4 mb-4 order-0">
                   <div class="card">
@@ -90,8 +183,6 @@
                     </div>
                   </div>
                 </div>
-              </div>
-              <div class="row">
 
                 <div class="col-md-12 col-lg-8 col-xl-4 mb-4 order-0">
                   <div class="card">
@@ -115,6 +206,49 @@
 
 {% block script %}
 <script>
+const ctx10 = document.getElementById('barChart');
+
+new Chart(ctx10, {
+    type: 'bar',
+    data: {
+        labels: [{% for item in top_sale %}
+        "{{ item.product__name|escapejs }}",
+    {% endfor %}],
+        datasets: [{
+            label: '{{ last_date.year }}/{{ last_date.month }}/{{ last_date.day }}',
+            data: [{% for item in top_sale %}
+        "{{ item.sale_total_price }}",
+    {% endfor %}],
+            backgroundColor: 'steelblue'
+        }]
+    },
+    options: {
+        plugins: {
+            title: {
+                display: true,
+                text: 'نمودار ۱۰ کالا پر فروش',
+                font: { size: 20 }
+            }
+        },
+        scales: {
+            x: {
+                title: {
+                    display: true,
+                    text: 'نام محصول',
+                    font: { size: 16 }
+                }
+            },
+            y: {
+                title: {
+                    display: true,
+                    text: 'مبلغ فروش',
+                    font: { size: 16 }
+                }
+            }
+        }
+    }
+});
+
 const ctx = document.getElementById('myChart');
 
 new Chart(ctx, {

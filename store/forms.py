@@ -115,3 +115,7 @@ class DateSelectForm(forms.Form):
     day = forms.CharField(label="روز", widget=forms.Select(attrs={"class":"form-select", "placeholder":"selected"}, choices=DAY_ITEMS))
     month = forms.CharField(label="ماه", widget=forms.Select(attrs={"class":"form-select"}, choices=MONTH_ITEMS))
     year = forms.CharField(label="سال", widget=forms.Select(attrs={"class":"form-select"}, choices=YEAR_ITEMS))
+
+
+class ProductSearchForm(forms.Form):
+    text = forms.CharField(label="کالا", widget=forms.TextInput(attrs={"class":"form-control", "placeholder":"نام یا کد کالا"}), required=False)

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django import views
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Count
 from django.db.models.functions import Cast
 from django.db import IntegrityError
 from django.contrib import messages
@@ -30,7 +30,7 @@ class IndexView(PermissionRequiredMixin, views.View):
     def get(self, request):
         date = DateModel.objects.order_by("-year", "-month", "-day")
         last_date = date.first()
-        duration = DateModel.objects.order_by("-year", "-month", "-day")[:6]
+        duration = date[:6]
         duration_result = {}
         for i in duration:
             sales = SaleModel.objects.filter(date=i)
@@ -44,6 +44,11 @@ class IndexView(PermissionRequiredMixin, views.View):
                     duration_result[f"{j.date.year}/{j.date.month}/{j.date.day}"]["count"] = float(j.count)
                     duration_result[f"{j.date.year}/{j.date.month}/{j.date.day}"]["count"] = round(duration_result[f"{j.date.year}/{j.date.month}/{j.date.day}"]["count"], 4)
                     duration_result[f"{j.date.year}/{j.date.month}/{j.date.day}"]["total_price"] = int(j.price_total)
+        total_count_6 = 0
+        total_price_6 = 0
+        for k,i in duration_result.items():
+            total_count_6 += int(i["count"])
+            total_price_6 += i["total_price"]
         top_products = (
             SaleModel.objects
             .filter(date__in=duration)
@@ -53,14 +58,18 @@ class IndexView(PermissionRequiredMixin, views.View):
             .order_by('-total_count')[:10]
         )
         top_customers = (
-                    SaleModel.objects
-                    .filter(date__in=duration)
-                    .annotate(count_int=Cast('price_total', models.IntegerField()))
-                    .values('customer__id', 'customer__name')
-                    .annotate(total_price=Sum('count_int'))
-                    .order_by('-total_price')[:10]
-                )
+            SaleModel.objects
+            .filter(date__in=duration)
+            .annotate(count_int=Cast('price_total', models.IntegerField()))
+            .values('customer__id', 'customer__name')
+            .annotate(total_price=Sum('count_int'))
+            .order_by('-total_price')[:10]
+        )
         sale = SaleModel.objects.filter(date=last_date)
+        top_sale = sale.annotate(price_int=Cast("price_total", models.IntegerField())).values("product__name").annotate(sale_total_price=Sum("price_total"))[:10]
+        customer_count = sale.values("customer").annotate(Count("pk")).count()
+        sale_6 = SaleModel.objects.filter(date__in=duration)
+        customer_count_6 = sale_6.values("customer").annotate(Count("pk")).count()
         total_price = 0
         total_count = 0
         for i in sale:
@@ -71,9 +80,15 @@ class IndexView(PermissionRequiredMixin, views.View):
         customer = sale.annotate(my_int_field=Cast("price_total", output_field=models.IntegerField())).order_by("-my_int_field").first()
         context = {
             "date":date,
+            "last_date":last_date,
             "sale":sale,
             "product":product,
             "customer":customer,
+            "customer_count":customer_count,
+            "top_sale":top_sale,
+            "customer_count_6":customer_count_6,
+            "total_price_6":total_price_6,
+            "total_count_6":total_count_6,
             "total_price":total_price,
             "total_count":total_count,
             "duration_result":duration_result,
@@ -85,7 +100,7 @@ class IndexView(PermissionRequiredMixin, views.View):
 
 class CustomerListView(PermissionRequiredMixin, views.View):
     login_url = "login"
-    permission_required = ["store.view_customermodel"]
+    permission_required = []
 
     def get(self, request):
         customers = CustomerModel.objects.all()
@@ -110,14 +125,19 @@ class CustomerListView(PermissionRequiredMixin, views.View):
                     pass
             customer_total_price += total_price
             sales[i.code] = {"count":total_count, "price":total_price}
-        paginator = Paginator(customers, 24)
+        sorted_data = dict(sorted(sales.items(), key=lambda item: item[1]['price'], reverse=True))
+        items = [
+            {"code": key, "count": value["count"], "price": value["price"]}
+            for key, value in sorted_data.items()
+        ]
+        paginator = Paginator(items, 24)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
         offset = (page_obj.number - 1) * paginator.per_page
         context = {
             "page_obj":page_obj,
             "offset":offset,
-            "sales":sales,
+            "customers":customers,
             "count":count,
             "customer_total_price":customer_total_price,
         }
@@ -126,7 +146,7 @@ class CustomerListView(PermissionRequiredMixin, views.View):
 
 class CustomerDetailsView(PermissionRequiredMixin, views.View):
     login_url = "login"
-    permission_required = ["store.view_customermodel"]
+    permission_required = []
 
     def get(self, request, cid):
         customer = get_object_or_404(CustomerModel, pk=cid)
@@ -288,9 +308,19 @@ class ProductListView(PermissionRequiredMixin, views.View):
     permission_required = ["store.view_productmodel"]
 
     def get(self, request):
+        form = ProductSearchForm(request.GET)
         product = ProductModel.objects.all()
+        if form.is_valid():
+            text = form.cleaned_data.get("text")
+            product = product.filter(Q(name__icontains=text) | Q(code__icontains=text))
+        paginator = Paginator(product, 24)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        offset = (page_obj.number - 1) * paginator.per_page
         context = {
-            "product":product,
+            "form":form,
+            "page_obj":page_obj,
+            "offset":offset,
         }
         return render(request, "store/product-list.html", context)
 
